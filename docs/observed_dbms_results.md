@@ -185,4 +185,13 @@ show both the nonempty FIFO order and the cleanup result.
 SQL Developer query 8 returned five `VALID` objects in `BUSBOOKING`: the
 `TRG_TRIPSEAT_SAME_TRIP_BUS` and `TRG_WAITLIST_OFFER_TRIP` integrity triggers,
 and the `V_TRIP_OCCUPANCY`, `V_TRIP_REVENUE`, and `V_WAITLIST_QUEUE` reporting
-views. This completed the eight-query read-only SQL worksheet walkthrough.
+views. This completed the original eight-query read-only SQL worksheet
+walkthrough; query 9 was added later for conditional uniqueness.
+
+## Conditional uniqueness for active queue entries
+
+Migration `booking.0005_active_waitlist_unique` applied successfully in
+Oracle. `verify_active_waitlist` then reported that a second active entry for
+the same passenger and trip was rejected with `ORA-00001`. After the first
+entry was changed to `CANCELLED`, a new `WAITING` entry succeeded. The command
+rolled back all verification rows, leaving project data unchanged.
