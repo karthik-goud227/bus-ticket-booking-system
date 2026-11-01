@@ -1,0 +1,21 @@
+{% extends 'booking/base.html' %}
+{% block title %}Find a bus · BusBook{% endblock %}
+{% block content %}
+<section class="hero p-4 p-md-5 mb-4"><h1 class="fw-bold">Your next journey starts here.</h1><p class="mb-0">Find a bus, choose your seats, and travel with confidence.</p></section>
+<form class="card p-4 mb-4" method="get">
+  <div class="row g-3 align-items-end">
+    <div class="col-md-4"><label class="form-label">From</label><input name="origin" class="form-control" value="{{ origin }}" placeholder="Origin city"></div>
+    <div class="col-md-4"><label class="form-label">To</label><input name="destination" class="form-control" value="{{ destination }}" placeholder="Destination city"></div>
+    <div class="col-md-2"><label class="form-label">Date</label><input name="date" type="date" class="form-control" value="{{ date }}"></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Search</button></div>
+  </div>
+</form>
+<h2 class="h4 mb-3">Available trips</h2>
+{% for trip in trips %}
+<article class="card p-4 mb-3"><div class="row align-items-center g-3">
+  <div class="col-md-6"><h3 class="h5 mb-1">{{ trip.origin }} → {{ trip.destination }}</h3><div class="text-secondary">{{ trip.bus.operator_name }} · {{ trip.bus.bus_type }}</div></div>
+  <div class="col-md-3"><strong>{{ trip.departure_at|date:'D, d M · g:i A' }}</strong><div class="text-secondary">Arrives {{ trip.arrival_at|date:'g:i A' }}</div></div>
+  <div class="col-md-3 text-md-end"><div class="fw-bold mb-2">₹{{ trip.fare }}</div><a class="btn btn-primary" href="{% url 'trip_detail' trip.id %}">View seats</a></div>
+</div></article>
+{% empty %}<div class="card p-4">No matching trips yet. Try another date or ask the admin to add a trip.</div>{% endfor %}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'booking/base.html' %}
+{% block title %}Booking {{ booking.reference }} · BusBook{% endblock %}
+{% block content %}<a href="{% url 'my_bookings' %}" class="text-decoration-none">← My bookings</a>
+<div class="card p-4 my-3"><div class="d-flex justify-content-between"><h1 class="h3">{{ booking.trip.origin }} → {{ booking.trip.destination }}</h1><span class="badge text-bg-primary">{{ booking.status }}</span></div>
+<p class="text-secondary">Reference {{ booking.reference }} · {{ booking.trip.departure_at|date:'D, d M Y · g:i A' }}</p>
+<p><strong>Seats:</strong> {% for inventory in seats %}{{ inventory.seat.number }} {% empty %}Released{% endfor %}</p>
+<p><strong>Total:</strong> ₹{{ booking.total_fare }}</p>
+{% if booking.status == 'HELD' %}<p>Hold expires {{ booking.hold_expires_at|date:'d M, g:i A' }}. Payment is simulated; no money will be charged.</p>
+<form method="post" action="{% url 'confirm' booking.id %}" class="d-inline">{% csrf_token %}<button class="btn btn-success">Simulate payment & confirm</button></form>{% endif %}
+{% if booking.status == 'CONFIRMED' %}<div class="alert alert-success">Your ticket is confirmed. Show this reference during the demonstration.</div>{% endif %}
+{% if booking.status == 'HELD' or booking.status == 'CONFIRMED' %}<form method="post" action="{% url 'cancel' booking.id %}" class="mt-3">{% csrf_token %}<button class="btn btn-outline-danger" onclick="return confirm('Cancel this whole booking?')">Cancel booking</button></form>{% endif %}
+{% if booking.status == 'CANCELLED' %}<p class="text-secondary mb-0">This booking was cancelled. Confirmed payments receive a simulated full refund.</p>{% endif %}
+</div>{% endblock %}

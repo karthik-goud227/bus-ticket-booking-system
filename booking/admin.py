@@ -3,10 +3,16 @@ from django.contrib import admin
 from .models import Booking, Bus, Payment, Seat, Trip, TripSeat, WaitlistEntry
 
 
+class SeatInline(admin.TabularInline):
+    model = Seat
+    extra = 4
+
+
 @admin.register(Bus)
 class BusAdmin(admin.ModelAdmin):
     list_display = ("registration_number", "operator_name", "bus_type", "is_active")
     search_fields = ("registration_number", "operator_name")
+    inlines = (SeatInline,)
 
 
 @admin.register(Seat)
@@ -19,6 +25,25 @@ class SeatAdmin(admin.ModelAdmin):
 class TripAdmin(admin.ModelAdmin):
     list_display = ("origin", "destination", "departure_at", "bus", "fare", "is_cancelled")
     list_filter = ("is_cancelled", "departure_at")
+    actions = ("sync_seat_inventory",)
+
+    def get_readonly_fields(self, request, obj=None):
+        return ("bus",) if obj else ()
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if not change:
+            for seat in obj.bus.seats.all():
+                TripSeat.objects.get_or_create(trip=obj, seat=seat)
+
+    @admin.action(description="Add missing seats to selected trips")
+    def sync_seat_inventory(self, request, queryset):
+        count = 0
+        for trip in queryset.select_related("bus"):
+            for seat in trip.bus.seats.all():
+                _, created = TripSeat.objects.get_or_create(trip=trip, seat=seat)
+                count += created
+        self.message_user(request, f"Added {count} missing trip seats.")
 
 
 @admin.register(TripSeat)

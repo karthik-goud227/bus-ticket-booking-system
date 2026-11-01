@@ -1,0 +1,8 @@
+{% extends 'booking/base.html' %}
+{% block title %}My bookings · BusBook{% endblock %}
+{% block content %}<h1 class="h3 mb-4">My bookings</h1>
+{% for offer in offers %}<div class="alert alert-info"><strong>Seat offer:</strong> {{ offer.trip.origin }} → {{ offer.trip.destination }}, seat {{ offer.offered_seat.seat.number }}. Expires {{ offer.offer_expires_at|date:'d M, g:i A' }}.
+<form method="post" action="{% url 'accept_offer' offer.id %}" class="d-inline">{% csrf_token %}<button class="btn btn-primary btn-sm ms-2">Accept offer</button></form></div>{% endfor %}
+{% for booking in bookings %}<div class="card p-4 mb-3"><div class="d-flex justify-content-between align-items-center flex-wrap gap-2"><div><h2 class="h5 mb-1">{{ booking.trip.origin }} → {{ booking.trip.destination }}</h2><span class="text-secondary">{{ booking.reference }} · {{ booking.trip.departure_at|date:'d M Y, g:i A' }}</span></div><div><span class="badge text-bg-secondary me-2">{{ booking.status }}</span><a class="btn btn-outline-primary btn-sm" href="{% url 'booking_detail' booking.id %}">View</a></div></div></div>
+{% empty %}<div class="card p-4">No bookings yet. <a href="{% url 'home' %}">Find a trip</a>.</div>{% endfor %}
+{% endblock %}
