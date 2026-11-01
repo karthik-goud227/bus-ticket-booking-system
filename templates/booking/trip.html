@@ -1,9 +1,10 @@
 {% extends 'booking/base.html' %}
+{% load static %}
 {% block title %}Choose seats · BusBook{% endblock %}
 {% block content %}
 <a href="{% url 'home' %}" class="back-link">← Back to trips</a>
 <section class="trip-banner mt-3 mb-4">
-  <div><span class="eyebrow">SELECT YOUR JOURNEY</span><h1>{{ trip.origin }} <span class="route-arrow">→</span> {{ trip.destination }}</h1><p>{{ trip.departure_at|date:'D, d M Y · g:i A' }} · {{ trip.bus.operator_name }} · {{ trip.bus.bus_type }}</p></div>
+  <div class="banner-heading"><img class="college-logo banner-logo" src="{% static 'booking/iiitdm-kurnool-logo.jpg' %}" alt="IIITDM Kurnool emblem"><div><span class="eyebrow">SELECT YOUR JOURNEY</span><h1>{{ trip.origin }} <span class="route-arrow">→</span> {{ trip.destination }}</h1><p>{{ trip.departure_at|date:'D, d M Y · g:i A' }} · {{ trip.bus.operator_name }} · {{ trip.bus.bus_type }}</p></div></div>
   <div class="fare-block"><small>PER SEAT</small><strong>₹{{ trip.fare }}</strong></div>
 </section>
 <div class="row g-4"><div class="col-lg-8"><section class="card p-4 p-md-5">

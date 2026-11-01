@@ -11,7 +11,7 @@
 <body>
 <nav class="navbar navbar-dark navbar-expand-lg mb-4">
   <div class="container">
-    <a class="navbar-brand fw-bold" href="{% url 'home' %}" aria-label="BusBook home"><span class="brand-mark">B</span> <span>BusBook</span><span class="brand-spark">.</span></a>
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}" aria-label="BusBook home"><img class="college-logo nav-logo" src="{% static 'booking/iiitdm-kurnool-logo.jpg' %}" alt="IIITDM Kurnool emblem"><span>BusBook<span class="brand-spark">.</span><small class="brand-subtitle">IIITDM Kurnool project</small></span></a>
     <div class="nav-links d-flex gap-3 align-items-center">
       <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>Find buses</a>
       {% if user.is_authenticated %}
@@ -29,6 +29,6 @@
   {% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>{% endfor %}
   {% block content %}{% endblock %}
 </main>
-<footer class="site-footer"><div class="container d-flex justify-content-between flex-wrap gap-2"><span>BusBook · Bus ticket reservation</span><span>Bookings and payments in this demo are simulated.</span></div></footer>
+<footer class="site-footer"><div class="container d-flex justify-content-between flex-wrap gap-2"><span class="footer-identity"><img class="college-logo footer-logo" src="{% static 'booking/iiitdm-kurnool-logo.jpg' %}" alt=""><span>IIITDM Kurnool · BusBook student project</span></span><span>Bookings and payments in this demo are simulated.</span></div></footer>
 </body>
 </html>

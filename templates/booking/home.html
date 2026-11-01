@@ -1,9 +1,10 @@
 {% extends 'booking/base.html' %}
+{% load static %}
 {% block title %}Find a bus · BusBook{% endblock %}
 {% block content %}
 <section class="home-hero mb-4">
   <div class="hero-copy">
-    <span class="hero-kicker"><span class="live-dot"></span> THE BETTER WAY TO GO</span>
+    <span class="hero-kicker"><img class="college-logo hero-logo" src="{% static 'booking/iiitdm-kurnool-logo.jpg' %}" alt=""> IIITDM KURNOOL · BUSBOOK</span>
     <h1>Your next journey<br><em>starts here.</em></h1>
     <p>Find your route, pick the perfect seat, and travel with confidence.</p>
     <a class="hero-link" href="#find-trip">Explore trips <span aria-hidden="true">↗</span></a>
