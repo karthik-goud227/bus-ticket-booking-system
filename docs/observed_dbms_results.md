@@ -22,6 +22,20 @@ After confirming seat 6 at ₹699, the joined occupancy and revenue views return
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 10 | 1 | 9 | 10% | ₹699 | ₹0 | ₹699 |
 
+## Cancellation and refund
+
+A second ₹699 booking for seat 7 was confirmed and then cancelled. The
+passenger booking list showed that booking as `CANCELLED` while the original
+seat 6 booking remained `CONFIRMED`. The Oracle views then returned:
+
+| Total seats | Booked | Available | Occupancy | Captured | Refunded | Net |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 10 | 1 | 9 | 10% | ₹1,398 | ₹699 | ₹699 |
+
+This confirms that cancellation released seat 7 and recorded a simulated
+refund without altering the original booking. Payments are simulated; no real
+money was transferred.
+
 ## Trip-search execution plan
 
 For the Kurnool-to-Vijayawada trip search, Oracle's `EXPLAIN PLAN` showed:
