@@ -68,7 +68,9 @@ database connection defaults to `localhost:1521/xepdb1`; `DB_DSN` and
    refund.
 4. When a trip is full, another passenger can join the waiting list. A
    cancellation offers a released seat to the first waiting passenger for 10
-   minutes. The offer appears under **My bookings**.
+   minutes. **My bookings** shows the Oracle FIFO queue position and any live
+   offer. A passenger can leave the list; declining an offer passes that seat
+   to the next waiting passenger.
 5. Admin users can open `/insights/` for occupancy and simulated revenue
    graphics sourced from Oracle reporting views.
 
@@ -86,6 +88,7 @@ and remove them when finished:
 .\.venv\Scripts\python.exe manage.py verify_seat_race
 .\.venv\Scripts\python.exe manage.py verify_atomic_hold
 .\.venv\Scripts\python.exe manage.py verify_waitlist_fifo
+.\.venv\Scripts\python.exe manage.py verify_waitlist_leave
 ```
 
 Read `docs/er_model.md` for the ER diagram and normalization discussion,

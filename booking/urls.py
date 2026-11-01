@@ -12,6 +12,7 @@ urlpatterns = [
     path("trip/<int:trip_id>/", views.trip_detail, name="trip_detail"),
     path("trip/<int:trip_id>/hold/", views.create_hold, name="create_hold"),
     path("trip/<int:trip_id>/waitlist/", views.waitlist_join, name="waitlist_join"),
+    path("waitlist/<int:entry_id>/leave/", views.waitlist_leave, name="waitlist_leave"),
     path("waitlist/<int:entry_id>/accept/", views.accept_offer, name="accept_offer"),
     path("bookings/", views.my_bookings, name="my_bookings"),
     path("bookings/<int:booking_id>/", views.booking_detail, name="booking_detail"),

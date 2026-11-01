@@ -58,6 +58,13 @@ expired, the second received the seat and confirmed it. All three checks
 passed, and the command removed its test rows. This verifies two-person FIFO
 promotion and offer expiry. Concurrent queue joins remain a separate case.
 
+An isolated `verify_waitlist_leave` run checked the new passenger exit flow.
+`V_WAITLIST_QUEUE` assigned positions 1 and 2 to two waiting passengers.
+After the first passenger received a cancelled seat and left the list, the
+second passenger immediately received that offer. The Oracle view then showed
+the second passenger at position 1. All three checks passed, and the command
+removed its test rows.
+
 ## Trip-search execution plan
 
 For the Kurnool-to-Vijayawada trip search, Oracle's `EXPLAIN PLAN` showed:

@@ -9,7 +9,7 @@
     <div class="ticket-rule"></div>
     <div class="ticket-details"><div><small>BOOKING REFERENCE</small><strong class="reference-code">{{ booking.reference }}</strong></div><div><small>SEATS</small><div class="ticket-seats">{% for inventory in seats %}<span>{{ inventory.seat.number }}</span>{% empty %}<span>Released</span>{% endfor %}</div></div><div><small>TOTAL FARE</small><strong>₹{{ booking.total_fare }}</strong></div></div>
     {% if booking.status == 'CONFIRMED' %}<div class="ticket-note success">✓ Confirmed. Keep this reference for your journey.</div>{% endif %}
-    {% if booking.status == 'HELD' %}<div class="ticket-note">Your seats are held until {{ booking.hold_expires_at|date:'d M, g:i A' }}. Payment is simulated; no money is charged.</div>
+    {% if booking.status == 'HELD' %}<div class="ticket-note held-note"><strong>Your seats are on hold.</strong><span id="hold-countdown" role="timer" data-expires="{{ booking.hold_expires_at|date:'c' }}">Hold ends at {{ booking.hold_expires_at|date:'g:i A' }}</span><small>Payment is simulated; no money is charged. Availability is checked again when you confirm.</small></div>
       <form method="post" action="{% url 'confirm' booking.id %}" class="mt-3">{% csrf_token %}<button class="btn btn-success btn-lg">Simulate payment & confirm</button></form>{% endif %}
     {% if booking.status == 'CANCELLED' %}<div class="ticket-note">This booking was cancelled. A simulated full refund was recorded for confirmed payments.</div>{% endif %}
     {% if booking.status == 'EXPIRED' %}<div class="ticket-note">This seat hold has expired. Please choose seats again.</div>{% endif %}
@@ -17,4 +17,24 @@
   <div class="ticket-footer"><span>Demo booking · No real payment or travel service</span><span>BusBook</span></div>
 </article>
 {% if booking.status == 'HELD' or booking.status == 'CONFIRMED' %}<form method="post" action="{% url 'cancel' booking.id %}" class="mt-4 cancel-action">{% csrf_token %}<button class="btn btn-outline-danger" onclick="return confirm('Cancel this whole booking?')">Cancel booking</button></form>{% endif %}
+{% if booking.status == 'HELD' %}<script>
+  const holdTimer = document.getElementById('hold-countdown');
+  const holdDeadline = Date.parse(holdTimer.dataset.expires);
+  if (!Number.isNaN(holdDeadline)) {
+    function updateHoldTimer() {
+      const remaining = Math.max(0, Math.ceil((holdDeadline - Date.now()) / 1000));
+      if (remaining === 0) {
+        holdTimer.textContent = 'Hold time elapsed. Refresh for the latest status.';
+        holdTimer.closest('.held-note').classList.add('hold-ended');
+        clearInterval(holdInterval);
+      } else {
+        const minutes = Math.floor(remaining / 60);
+        const seconds = String(remaining % 60).padStart(2, '0');
+        holdTimer.textContent = `About ${minutes}:${seconds} remaining`;
+      }
+    }
+    const holdInterval = setInterval(updateHoldTimer, 1000);
+    updateHoldTimer();
+  }
+</script>{% endif %}
 {% endblock %}

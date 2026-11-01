@@ -204,3 +204,27 @@ def join_waitlist(*, user, trip):
     if set(available_ids) - set(offered_ids):
         raise BookingConflict("Seats are available now. Please book one directly.")
     return WaitlistEntry.objects.create(user=user, trip=trip)
+
+
+@transaction.atomic
+def leave_waitlist(*, user, entry_id):
+    """Remove a passenger and immediately pass any active offer to the FIFO queue."""
+    trip_id = WaitlistEntry.objects.only("trip_id").get(id=entry_id, user=user).trip_id
+    Trip.objects.select_for_update().get(id=trip_id)
+    now = timezone.now()
+    released = _release_expired(trip_id, now)
+    released.extend(_expire_offers(trip_id, now))
+    entry = WaitlistEntry.objects.select_for_update().get(id=entry_id, user=user)
+    if entry.status == WaitlistEntry.Status.CANCELLED:
+        _offer_next(trip_id, released, now)
+        return entry
+    if entry.status not in (WaitlistEntry.Status.WAITING, WaitlistEntry.Status.OFFERED):
+        raise BookingConflict("This waiting-list entry is no longer active.")
+    if entry.status == WaitlistEntry.Status.OFFERED and entry.offered_seat_id:
+        released.append(entry.offered_seat)
+    entry.status = WaitlistEntry.Status.CANCELLED
+    entry.offered_seat = None
+    entry.offer_expires_at = None
+    entry.save(update_fields=["status", "offered_seat", "offer_expires_at"])
+    _offer_next(trip_id, released, now)
+    return entry

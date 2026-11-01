@@ -1,21 +1,33 @@
 {% extends 'booking/base.html' %}
 {% block title %}Find a bus · BusBook{% endblock %}
 {% block content %}
-<section class="hero p-4 p-md-5 mb-4"><h1 class="fw-bold">Your next journey starts here.</h1><p class="mb-0">Find a bus, choose your seats, and travel with confidence.</p></section>
-<form class="card p-4 mb-4" method="get">
-  <div class="row g-3 align-items-end">
-    <div class="col-md-4"><label class="form-label">From</label><input name="origin" class="form-control" value="{{ origin }}" placeholder="Origin city"></div>
-    <div class="col-md-4"><label class="form-label">To</label><input name="destination" class="form-control" value="{{ destination }}" placeholder="Destination city"></div>
-    <div class="col-md-2"><label class="form-label">Date</label><input name="date" type="date" class="form-control" value="{{ date }}"></div>
-    <div class="col-md-2"><button class="btn btn-primary w-100">Search</button></div>
+<section class="home-hero mb-4">
+  <div class="hero-copy">
+    <span class="hero-kicker"><span class="live-dot"></span> THE BETTER WAY TO GO</span>
+    <h1>Your next journey<br><em>starts here.</em></h1>
+    <p>Find your route, pick the perfect seat, and travel with confidence.</p>
+    <a class="hero-link" href="#find-trip">Explore trips <span aria-hidden="true">↗</span></a>
   </div>
-</form>
-<h2 class="h4 mb-3">Available trips</h2>
-{% for trip in trips %}
-<article class="card p-4 mb-3"><div class="row align-items-center g-3">
-  <div class="col-md-6"><h3 class="h5 mb-1">{{ trip.origin }} → {{ trip.destination }}</h3><div class="text-secondary">{{ trip.bus.operator_name }} · {{ trip.bus.bus_type }}</div></div>
-  <div class="col-md-3"><strong>{{ trip.departure_at|date:'D, d M · g:i A' }}</strong><div class="text-secondary">Arrives {{ trip.arrival_at|date:'g:i A' }}</div></div>
-  <div class="col-md-3 text-md-end"><div class="fw-bold mb-2">₹{{ trip.fare }}</div><a class="btn btn-primary" href="{% url 'trip_detail' trip.id %}">View seats</a></div>
-</div></article>
-{% empty %}<div class="card p-4">No matching trips yet. Try another date or ask the admin to add a trip.</div>{% endfor %}
+  <div class="hero-art" aria-hidden="true">
+    <div class="journey-orbit orbit-one"></div><div class="journey-orbit orbit-two"></div>
+    <div class="journey-card"><span class="journey-card-label">YOUR JOURNEY</span><div class="journey-stops"><span class="journey-stop">A</span><span class="journey-track"></span><span class="journey-stop destination">B</span></div><div class="journey-card-bottom"><span>Choose a route</span><span>Find your seat</span></div></div>
+    <div class="floating-ticket">✦ &nbsp; A seat for every journey</div>
+  </div>
+</section>
+<section class="search-panel card mb-4" id="find-trip" aria-labelledby="search-heading">
+  <div class="section-heading"><div><span class="eyebrow text-primary">PLAN YOUR TRIP</span><h2 id="search-heading">Where are you headed?</h2></div><span class="section-note">Search available journeys</span></div>
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-md-4"><label for="origin" class="form-label">From</label><input id="origin" name="origin" class="form-control" value="{{ origin }}" placeholder="Origin city" autocomplete="address-level2"></div>
+    <div class="col-md-4"><label for="destination" class="form-label">To</label><input id="destination" name="destination" class="form-control" value="{{ destination }}" placeholder="Destination city" autocomplete="address-level2"></div>
+    <div class="col-md-2"><label for="travel-date" class="form-label">Travel date</label><input id="travel-date" name="date" type="date" class="form-control" value="{{ date }}"></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Find buses <span aria-hidden="true">→</span></button></div>
+  </form>
+</section>
+<section class="trip-results" aria-labelledby="trips-heading">
+  <div class="section-heading"><div><span class="eyebrow text-primary">AVAILABLE ROUTES</span><h2 id="trips-heading">Trips ready for you</h2></div></div>
+  {% for trip in trips %}
+  <article class="card trip-result"><div class="trip-result-main"><span class="trip-result-icon" aria-hidden="true">↗</span><div><h3>{{ trip.origin }} <span class="route-arrow">→</span> {{ trip.destination }}</h3><p>{{ trip.bus.operator_name }} <span aria-hidden="true">·</span> {{ trip.bus.bus_type }}</p></div></div><div class="trip-result-time"><span class="trip-result-label">DEPARTURE</span><strong>{{ trip.departure_at|date:'D, d M · g:i A' }}</strong><small>Arrives {{ trip.arrival_at|date:'D, g:i A' }}</small></div><div class="trip-result-action"><span class="trip-result-label">PER SEAT</span><strong>₹{{ trip.fare }}</strong><a class="btn btn-primary" href="{% url 'trip_detail' trip.id %}">Choose seats <span aria-hidden="true">→</span></a></div></article>
+  {% empty %}<div class="card empty-state"><span class="empty-icon" aria-hidden="true">⌕</span><h3>No trips found</h3><p>Try another route or date. An admin can add more journeys.</p></div>{% endfor %}
+</section>
+<section class="confidence-strip" aria-label="Booking features"><div><span aria-hidden="true">◉</span><strong>Pick your seat</strong><small>See availability before booking</small></div><div><span aria-hidden="true">↺</span><strong>Flexible plans</strong><small>Cancellation and waiting list</small></div><div><span aria-hidden="true">✓</span><strong>Clear booking</strong><small>Keep your journey details together</small></div></section>
 {% endblock %}

@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .models import Booking, Trip, TripSeat, WaitlistEntry
-from .services import BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, refresh_trip
+from .services import BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, leave_waitlist, refresh_trip
 
 
 @staff_member_required
@@ -117,6 +117,18 @@ def waitlist_join(request, trip_id):
 
 @login_required
 @require_POST
+def waitlist_leave(request, entry_id):
+    entry = get_object_or_404(WaitlistEntry, id=entry_id, user=request.user)
+    try:
+        leave_waitlist(user=request.user, entry_id=entry.id)
+        messages.success(request, "You left the waiting list.")
+    except BookingConflict as error:
+        messages.error(request, str(error))
+    return redirect("my_bookings")
+
+
+@login_required
+@require_POST
 def accept_offer(request, entry_id):
     entry = get_object_or_404(WaitlistEntry.objects.select_related("trip"), id=entry_id, user=request.user)
     try:
@@ -132,10 +144,26 @@ def accept_offer(request, entry_id):
 @login_required
 def my_bookings(request):
     bookings = Booking.objects.filter(user=request.user).select_related("trip", "trip__bus").order_by("-created_at")
-    offers = WaitlistEntry.objects.filter(
-        user=request.user, status=WaitlistEntry.Status.OFFERED, offer_expires_at__gt=timezone.now()
-    ).select_related("trip", "offered_seat__seat").order_by("joined_at")
-    return render(request, "booking/my_bookings.html", {"bookings": bookings, "offers": offers})
+    active_statuses = [WaitlistEntry.Status.WAITING, WaitlistEntry.Status.OFFERED]
+    trip_ids = WaitlistEntry.objects.filter(
+        user=request.user, status__in=active_statuses
+    ).values_list("trip_id", flat=True).distinct()
+    for trip_id in list(trip_ids):
+        refresh_trip(trip_id)
+    waitlist_entries = list(WaitlistEntry.objects.filter(
+        user=request.user, status__in=active_statuses
+    ).select_related("trip", "offered_seat__seat").order_by("joined_at", "id"))
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT entry_id, queue_position FROM v_waitlist_queue WHERE user_id = %s",
+            [request.user.id],
+        )
+        positions = dict(cursor.fetchall())
+    for entry in waitlist_entries:
+        entry.queue_position = positions.get(entry.id)
+    return render(request, "booking/my_bookings.html", {
+        "bookings": bookings, "waitlist_entries": waitlist_entries,
+    })
 
 
 @login_required

@@ -8,7 +8,7 @@
 </section>
 <div class="row g-4"><div class="col-lg-8"><section class="card p-4 p-md-5">
   <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap"><div><span class="eyebrow text-primary">SEAT MAP</span><h2 class="h4 mb-0">Choose your seats</h2></div><span class="badge badge-soft">{{ available_count }} available</span></div>
-  <div class="seat-legend mt-3 mb-4"><span><i class="legend-dot available"></i>Available</span><span><i class="legend-dot selected"></i>Selected</span><span><i class="legend-dot unavailable"></i>Unavailable</span></div>
+  <div class="seat-legend mt-3 mb-4"><span><i class="legend-dot available"></i>Available</span><span><i class="legend-dot selected"></i>Selected</span><span><i class="legend-dot unavailable"></i>Booked / unavailable</span></div>
   <form method="post" action="{% url 'create_hold' trip.id %}" id="seat-form" data-fare="{{ trip.fare }}">{% csrf_token %}
     <div class="bus-frame"><div class="bus-front"><span>FRONT OF BUS</span><span aria-hidden="true">◉</span></div>
       <div class="seat-rows">
