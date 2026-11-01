@@ -127,9 +127,10 @@ the earlier recovery snapshot. The queue view returned no active rows.
 Query 4 raised `ORA-01747` because Oracle requires the seat column named
 `NUMBER` to be quoted in this SQL. The worksheet was corrected to
 `s."NUMBER"`. A rerun returned all ten Kurnool-to-Vijayawada seat rows for
-bus 10901, confirming the four-table join works. The screenshot showed every
-seat as `BOOKED`, consistent with the restore snapshot, but did not display
-the connected user; its schema is therefore not independently confirmed.
+bus 10901, confirming the four-table join works. A subsequent session query
+confirmed `BUSBOOKING_RESTORE` on `xepdb1`; every seat showed `BOOKED`, as
+expected from the restore snapshot.
 The initial text sort placed seat `10` between `1` and `2`, so the worksheet
 now sorts numeric labels numerically while allowing alphanumeric labels.
-That revised ordering still needs a rerun in SQL Developer.
+The latest SQL Developer result still showed the old text order, indicating
+the worksheet had not yet been refreshed with the revised `ORDER BY` clause.
