@@ -1,13 +1,20 @@
 {% extends 'booking/base.html' %}
 {% block title %}Booking {{ booking.reference }} · BusBook{% endblock %}
-{% block content %}<a href="{% url 'my_bookings' %}" class="text-decoration-none">← My bookings</a>
-<div class="card p-4 my-3"><div class="d-flex justify-content-between"><h1 class="h3">{{ booking.trip.origin }} → {{ booking.trip.destination }}</h1><span class="badge text-bg-primary">{{ booking.status }}</span></div>
-<p class="text-secondary">Reference {{ booking.reference }} · {{ booking.trip.departure_at|date:'D, d M Y · g:i A' }}</p>
-<p><strong>Seats:</strong> {% for inventory in seats %}{{ inventory.seat.number }} {% empty %}Released{% endfor %}</p>
-<p><strong>Total:</strong> ₹{{ booking.total_fare }}</p>
-{% if booking.status == 'HELD' %}<p>Hold expires {{ booking.hold_expires_at|date:'d M, g:i A' }}. Payment is simulated; no money will be charged.</p>
-<form method="post" action="{% url 'confirm' booking.id %}" class="d-inline">{% csrf_token %}<button class="btn btn-success">Simulate payment & confirm</button></form>{% endif %}
-{% if booking.status == 'CONFIRMED' %}<div class="alert alert-success">Your ticket is confirmed. Show this reference during the demonstration.</div>{% endif %}
-{% if booking.status == 'HELD' or booking.status == 'CONFIRMED' %}<form method="post" action="{% url 'cancel' booking.id %}" class="mt-3">{% csrf_token %}<button class="btn btn-outline-danger" onclick="return confirm('Cancel this whole booking?')">Cancel booking</button></form>{% endif %}
-{% if booking.status == 'CANCELLED' %}<p class="text-secondary mb-0">This booking was cancelled. Confirmed payments receive a simulated full refund.</p>{% endif %}
-</div>{% endblock %}
+{% block content %}
+<div class="ticket-actions"><a href="{% url 'my_bookings' %}" class="back-link">← My bookings</a>{% if booking.status == 'CONFIRMED' %}<button class="btn btn-outline-primary" type="button" onclick="window.print()">Print ticket</button>{% endif %}</div>
+<article class="ticket-card mt-3">
+  <div class="ticket-header"><div><span class="eyebrow">BUSBOOK · JOURNEY PASS</span><h1>{{ booking.trip.origin }} <span class="route-arrow">→</span> {{ booking.trip.destination }}</h1><p>{{ booking.trip.bus.operator_name }} · {{ booking.trip.bus.bus_type }}</p></div><span class="ticket-status status-{{ booking.status|lower }}">{{ booking.get_status_display }}</span></div>
+  <div class="ticket-body">
+    <div class="ticket-route"><div><small>DEPARTURE</small><strong>{{ booking.trip.departure_at|date:'g:i A' }}</strong><span>{{ booking.trip.departure_at|date:'D, d M Y' }}</span><span>{{ booking.trip.origin }}</span></div><div class="route-line"><span>BUS JOURNEY</span></div><div class="text-end"><small>ARRIVAL</small><strong>{{ booking.trip.arrival_at|date:'g:i A' }}</strong><span>{{ booking.trip.arrival_at|date:'D, d M Y' }}</span><span>{{ booking.trip.destination }}</span></div></div>
+    <div class="ticket-rule"></div>
+    <div class="ticket-details"><div><small>BOOKING REFERENCE</small><strong class="reference-code">{{ booking.reference }}</strong></div><div><small>SEATS</small><div class="ticket-seats">{% for inventory in seats %}<span>{{ inventory.seat.number }}</span>{% empty %}<span>Released</span>{% endfor %}</div></div><div><small>TOTAL FARE</small><strong>₹{{ booking.total_fare }}</strong></div></div>
+    {% if booking.status == 'CONFIRMED' %}<div class="ticket-note success">✓ Confirmed. Keep this reference for your journey.</div>{% endif %}
+    {% if booking.status == 'HELD' %}<div class="ticket-note">Your seats are held until {{ booking.hold_expires_at|date:'d M, g:i A' }}. Payment is simulated; no money is charged.</div>
+      <form method="post" action="{% url 'confirm' booking.id %}" class="mt-3">{% csrf_token %}<button class="btn btn-success btn-lg">Simulate payment & confirm</button></form>{% endif %}
+    {% if booking.status == 'CANCELLED' %}<div class="ticket-note">This booking was cancelled. A simulated full refund was recorded for confirmed payments.</div>{% endif %}
+    {% if booking.status == 'EXPIRED' %}<div class="ticket-note">This seat hold has expired. Please choose seats again.</div>{% endif %}
+  </div>
+  <div class="ticket-footer"><span>Demo booking · No real payment or travel service</span><span>BusBook</span></div>
+</article>
+{% if booking.status == 'HELD' or booking.status == 'CONFIRMED' %}<form method="post" action="{% url 'cancel' booking.id %}" class="mt-4 cancel-action">{% csrf_token %}<button class="btn btn-outline-danger" onclick="return confirm('Cancel this whole booking?')">Cancel booking</button></form>{% endif %}
+{% endblock %}
