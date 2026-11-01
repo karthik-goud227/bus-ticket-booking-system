@@ -1,20 +1,59 @@
 {% extends 'booking/base.html' %}
 {% block title %}Choose seats · BusBook{% endblock %}
 {% block content %}
-<a href="{% url 'home' %}" class="text-decoration-none">← Back to trips</a>
-<div class="card p-4 my-3"><h1 class="h3">{{ trip.origin }} → {{ trip.destination }}</h1><p class="text-secondary mb-0">{{ trip.departure_at|date:'D, d M Y · g:i A' }} · {{ trip.bus.operator_name }} · ₹{{ trip.fare }} per seat</p></div>
-<div class="row g-4"><div class="col-lg-8"><div class="card p-4"><h2 class="h5">Select seats <span class="badge badge-soft">{{ available_count }} available</span></h2>
-<p class="text-secondary">Green outline: available. Grey: held or booked. Select up to six seats.</p>
-<form method="post" action="{% url 'create_hold' trip.id %}">{% csrf_token %}
-  <div class="d-flex flex-wrap mb-3">
-  {% for inventory in seats %}
-    {% if inventory.can_select %}
-      <input class="btn-check seat-check" type="checkbox" name="seats" value="{{ inventory.id }}" id="seat{{ inventory.id }}">
-      <label class="btn btn-outline-success seat" for="seat{{ inventory.id }}">{{ inventory.seat.number }}</label>
-    {% else %}<span class="btn btn-secondary disabled seat">{{ inventory.seat.number }}</span>{% endif %}
-  {% empty %}<p>No seat inventory exists for this trip yet.</p>{% endfor %}
-  </div><button class="btn btn-primary" {% if not available_count %}disabled{% endif %}>Hold selected seats for 10 minutes</button>
-</form></div></div>
-<div class="col-lg-4"><div class="card p-4"><h2 class="h5">All seats taken?</h2><p>Join the waiting list. If a booking is cancelled, the next passenger gets a 10-minute offer.</p>
-<form method="post" action="{% url 'waitlist_join' trip.id %}">{% csrf_token %}<button class="btn btn-outline-primary">Join waiting list</button></form></div></div></div>
+<a href="{% url 'home' %}" class="back-link">← Back to trips</a>
+<section class="trip-banner mt-3 mb-4">
+  <div><span class="eyebrow">SELECT YOUR JOURNEY</span><h1>{{ trip.origin }} <span class="route-arrow">→</span> {{ trip.destination }}</h1><p>{{ trip.departure_at|date:'D, d M Y · g:i A' }} · {{ trip.bus.operator_name }} · {{ trip.bus.bus_type }}</p></div>
+  <div class="fare-block"><small>PER SEAT</small><strong>₹{{ trip.fare }}</strong></div>
+</section>
+<div class="row g-4"><div class="col-lg-8"><section class="card p-4 p-md-5">
+  <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap"><div><span class="eyebrow text-primary">SEAT MAP</span><h2 class="h4 mb-0">Choose your seats</h2></div><span class="badge badge-soft">{{ available_count }} available</span></div>
+  <div class="seat-legend mt-3 mb-4"><span><i class="legend-dot available"></i>Available</span><span><i class="legend-dot selected"></i>Selected</span><span><i class="legend-dot unavailable"></i>Unavailable</span></div>
+  <form method="post" action="{% url 'create_hold' trip.id %}" id="seat-form" data-fare="{{ trip.fare }}">{% csrf_token %}
+    <div class="bus-frame"><div class="bus-front"><span>FRONT OF BUS</span><span aria-hidden="true">◉</span></div>
+      <div class="seat-rows">
+      {% for row in seat_rows %}
+        <div class="seat-row">
+        {% for inventory in row %}
+          {% if forloop.counter == 3 %}<span class="aisle" aria-hidden="true"></span>{% endif %}
+          {% if inventory.can_select %}
+            <input class="seat-check" type="checkbox" name="seats" value="{{ inventory.id }}" id="seat{{ inventory.id }}">
+            <label class="seat-tile" for="seat{{ inventory.id }}" aria-label="Seat {{ inventory.seat.number }} available">
+              <svg class="seat-icon" viewBox="0 0 64 72" aria-hidden="true"><path class="chair-back" d="M18 5h28c6 0 10 5 10 11v29H8V16C8 10 12 5 18 5Z"/><path class="chair-base" d="M10 42h44v17c0 4-3 7-7 7H17c-4 0-7-3-7-7V42Z"/><path class="chair-detail" d="M16 18v22m32-22v22"/></svg>
+              <span class="seat-number">{{ inventory.seat.number }}</span>
+            </label>
+          {% else %}
+            <span class="seat-tile unavailable" aria-label="Seat {{ inventory.seat.number }} unavailable">
+              <svg class="seat-icon" viewBox="0 0 64 72" aria-hidden="true"><path class="chair-back" d="M18 5h28c6 0 10 5 10 11v29H8V16C8 10 12 5 18 5Z"/><path class="chair-base" d="M10 42h44v17c0 4-3 7-7 7H17c-4 0-7-3-7-7V42Z"/><path class="chair-detail" d="M16 18v22m32-22v22"/></svg>
+              <span class="seat-number">{{ inventory.seat.number }}</span>
+            </span>
+          {% endif %}
+        {% endfor %}
+        </div>
+      {% empty %}<p>No seat inventory exists for this trip yet.</p>{% endfor %}
+      </div>
+    </div>
+    <div class="selection-bar mt-4"><div><strong id="selection-count">0 seats selected</strong><div class="text-secondary">Maximum 6 seats · hold lasts 10 minutes</div></div><div class="text-end"><small>TOTAL FARE</small><strong id="selection-total">₹0</strong></div></div>
+    <button class="btn btn-primary btn-lg mt-3 w-100" id="hold-button" disabled>Hold selected seats</button>
+  </form>
+</section></div>
+<div class="col-lg-4"><section class="card p-4 mb-4"><span class="eyebrow text-primary">HOW IT WORKS</span><h2 class="h5">Your seats are protected</h2><p class="text-secondary">Selected seats are held for 10 minutes. Oracle checks availability again when you reserve them.</p></section>
+<section class="card p-4"><span class="eyebrow text-primary">FULL TRIP?</span><h2 class="h5">Join the waiting list</h2><p class="text-secondary">When a booking is cancelled, the next passenger receives a timed offer.</p>
+<form method="post" action="{% url 'waitlist_join' trip.id %}">{% csrf_token %}<button class="btn btn-outline-primary w-100">Join waiting list</button></form></section></div></div>
+<script>
+  const form = document.getElementById('seat-form');
+  const checks = [...form.querySelectorAll('.seat-check')];
+  const count = document.getElementById('selection-count');
+  const total = document.getElementById('selection-total');
+  const button = document.getElementById('hold-button');
+  const fare = Number(form.dataset.fare);
+  function updateSelection(changed) {
+    let selected = checks.filter(item => item.checked);
+    if (selected.length > 6) { changed.checked = false; selected = checks.filter(item => item.checked); }
+    count.textContent = `${selected.length} seat${selected.length === 1 ? '' : 's'} selected`;
+    total.textContent = `₹${(selected.length * fare).toLocaleString('en-IN')}`;
+    button.disabled = selected.length === 0;
+  }
+  checks.forEach(item => item.addEventListener('change', () => updateSelection(item)));
+</script>
 {% endblock %}

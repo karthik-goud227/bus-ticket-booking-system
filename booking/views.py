@@ -1,15 +1,41 @@
 from datetime import datetime, time, timedelta
+import re
 
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db import connection
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .models import Booking, Trip, TripSeat, WaitlistEntry
 from .services import BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, refresh_trip
+
+
+@staff_member_required
+def insights(request):
+    """Read-only dashboard sourced from the Oracle reporting views."""
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT o.trip_id, o.origin, o.destination, o.total_seats,
+                   o.booked_seats, o.available_seats, o.occupancy_pct,
+                   r.captured_amount, r.refunded_amount, r.net_amount
+            FROM v_trip_occupancy o
+            JOIN v_trip_revenue r ON r.trip_id = o.trip_id
+            ORDER BY o.trip_id DESC
+        """)
+        columns = [column[0].lower() for column in cursor.description]
+        trips = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return render(request, "booking/insights.html", {
+        "trips": trips,
+        "trip_count": len(trips),
+        "total_seats": sum(row["total_seats"] for row in trips),
+        "booked_seats": sum(row["booked_seats"] for row in trips),
+        "net_amount": sum(row["net_amount"] for row in trips),
+    })
 
 
 def home(request):
@@ -47,7 +73,11 @@ def signup(request):
 def trip_detail(request, trip_id):
     trip = get_object_or_404(Trip.objects.select_related("bus"), id=trip_id)
     refresh_trip(trip.id)
-    seats = list(TripSeat.objects.filter(trip=trip).select_related("seat").order_by("seat__number"))
+    seats = list(TripSeat.objects.filter(trip=trip).select_related("seat"))
+    seats.sort(key=lambda inventory: [
+        (0, int(part)) if part.isdigit() else (1, part.lower())
+        for part in re.split(r"(\d+)", inventory.seat.number)
+    ])
     offered_ids = set(WaitlistEntry.objects.filter(
         trip=trip, status=WaitlistEntry.Status.OFFERED,
         offer_expires_at__gt=timezone.now(),
@@ -56,7 +86,8 @@ def trip_detail(request, trip_id):
         seat.can_select = seat.status == TripSeat.Status.AVAILABLE and seat.id not in offered_ids
     available_count = sum(seat.can_select for seat in seats)
     return render(request, "booking/trip.html", {
-        "trip": trip, "seats": seats, "available_count": available_count,
+        "trip": trip, "seat_rows": [seats[i:i + 4] for i in range(0, len(seats), 4)],
+        "available_count": available_count,
     })
 
 
