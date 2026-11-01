@@ -73,8 +73,8 @@ database connection defaults to `localhost:1521/xepdb1`; `DB_DSN` and
    minutes. **My bookings** shows the Oracle FIFO queue position and any live
    offer. A passenger can leave the list; declining an offer passes that seat
    to the next waiting passenger.
-5. Admin users can open `/insights/` for occupancy and simulated revenue
-   graphics sourced from Oracle reporting views.
+5. Admin users can open `/insights/` for occupancy, simulated revenue, and
+   active waiting-list demand sourced from Oracle reporting views.
 
 Expired holds and offers are processed when the trip seat map is accessed.
 Run `manage.py process_expiries` periodically if you want automatic cleanup

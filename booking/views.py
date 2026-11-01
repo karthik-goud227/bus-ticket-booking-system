@@ -30,12 +30,33 @@ def insights(request):
         """)
         columns = [column[0].lower() for column in cursor.description]
         trips = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        cursor.execute("""
+            SELECT trip_id,
+                   SUM(CASE WHEN status = 'WAITING' THEN 1 ELSE 0 END) AS waiting_count,
+                   SUM(CASE WHEN status = 'OFFERED' AND offer_expires_at > %s
+                            THEN 1 ELSE 0 END) AS offered_count
+            FROM v_waitlist_queue
+            GROUP BY trip_id
+        """, [timezone.now()])
+        queue_by_trip = {
+            trip_id: (int(waiting or 0), int(offered or 0))
+            for trip_id, waiting, offered in cursor.fetchall()
+        }
+    for trip in trips:
+        trip["waiting_count"], trip["offered_count"] = queue_by_trip.get(trip["trip_id"], (0, 0))
+        trip["queue_count"] = trip["waiting_count"] + trip["offered_count"]
+    max_queue = max((trip["queue_count"] for trip in trips), default=0)
+    for trip in trips:
+        trip["queue_pct"] = round(100 * trip["queue_count"] / max_queue) if max_queue else 0
     return render(request, "booking/insights.html", {
         "trips": trips,
+        "queued_trips": [trip for trip in trips if trip["queue_count"]],
         "trip_count": len(trips),
         "total_seats": sum(row["total_seats"] for row in trips),
         "booked_seats": sum(row["booked_seats"] for row in trips),
         "net_amount": sum(row["net_amount"] for row in trips),
+        "waiting_count": sum(row["waiting_count"] for row in trips),
+        "offered_count": sum(row["offered_count"] for row in trips),
     })
 
 
