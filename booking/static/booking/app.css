@@ -144,6 +144,7 @@ body { background:radial-gradient(circle at 8% 13%,#ddecf746,transparent 25%),ra
 .search-panel .form-label { color:#34536b; font-size:.85rem; }
 .search-panel .form-control { min-height:47px; }
 .search-panel .btn { min-height:47px; }
+.search-options { display:flex; align-items:center; flex-wrap:wrap; gap:18px; padding-top:13px; margin-top:6px; border-top:1px solid var(--line); color:#466176; font-size:.82rem; }.search-options label { display:inline-flex; align-items:center; gap:9px; font-weight:700; }.search-options select { width:auto; min-height:35px; padding:5px 10px; font-size:.83rem; }.availability-toggle { cursor:pointer; }.availability-toggle input { width:16px; height:16px; margin:0; accent-color:#0c8072; }.clear-search { margin-left:auto; font-weight:700; text-decoration:none; }.clear-search:hover { text-decoration:underline; }
 .trip-results { margin-top:34px; }
 .trip-result { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(175px,.9fr) minmax(125px,.6fr); align-items:center; gap:22px; padding:23px 26px; margin-bottom:14px; transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease; }
 .trip-result:hover,.booking-item:hover { transform:translateY(-3px); border-color:#c5e2e5; box-shadow:0 16px 34px #1639541c; }

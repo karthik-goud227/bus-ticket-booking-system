@@ -62,7 +62,8 @@ database connection defaults to `localhost:1521/xepdb1`; `DB_DSN` and
    seats together, then add a future trip using that bus. The admin creates
    one `TripSeat` inventory row per bus seat for the new trip.
 2. Open `/` and create a passenger account. Search for the trip, select up to
-   six seats, and hold them for 10 minutes. Simulate payment to confirm.
+   six seats, and hold them for 10 minutes. Search can sort by departure or
+   fare and show only trips with bookable seats. Simulate payment to confirm.
 3. View the booking under **My bookings**. A confirmed ticket can be printed.
    Whole-booking cancellation releases its seats and records a simulated full
    refund.

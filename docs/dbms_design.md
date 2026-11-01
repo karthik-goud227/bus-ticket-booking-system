@@ -18,6 +18,15 @@ Database rules already implemented:
 - Indexes for trip search, booking history, and FIFO waitlist order.
 - Oracle row locks and atomic transactions in the booking service.
 
+Trip search filters route and departure fields. Its substring city matching
+does not guarantee use of the composite trip-search index.
+The optional "seats available only" control uses a correlated `EXISTS`
+subquery over `TripSeat`, excluding seats with an active waiting-list offer.
+The displayed bookable seat count is then read in one Oracle query through
+`V_TRIP_OCCUPANCY` and the seat inventory. Fare sorting is applied in the
+database before limiting the page to 50 trips. This keeps filtering accurate
+when some earlier trips are full.
+
 Run `docs/dbms_evidence.sql` in SQL Developer to inspect the actual database
 objects and reporting queries. Keep query output or screenshots as evidence.
 The two triggers are introduced by migration `0003_oracle_integrity` and count

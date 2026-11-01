@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import connection
+from django.db.models import Exists, OuterRef
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -39,12 +40,22 @@ def insights(request):
 
 
 def home(request):
+    now = timezone.now()
     trips = Trip.objects.select_related("bus").filter(
-        is_cancelled=False, departure_at__gt=timezone.now()
-    ).order_by("departure_at")
+        is_cancelled=False, departure_at__gt=now
+    )
     origin = request.GET.get("origin", "").strip()
     destination = request.GET.get("destination", "").strip()
     date = request.GET.get("date", "").strip()
+    sort = request.GET.get("sort", "departure")
+    sort_fields = {
+        "departure": ("departure_at", "id"),
+        "fare_low": ("fare", "departure_at", "id"),
+        "fare_high": ("-fare", "departure_at", "id"),
+    }
+    if sort not in sort_fields:
+        sort = "departure"
+    only_available = request.GET.get("available") == "1"
     if origin:
         trips = trips.filter(origin__icontains=origin)
     if destination:
@@ -56,7 +67,17 @@ def home(request):
             trips = trips.filter(departure_at__gte=start, departure_at__lt=start + timedelta(days=1))
         except ValueError:
             messages.error(request, "Enter a valid travel date.")
-    trip_list = list(trips[:50])
+    if only_available:
+        active_offer_seats = WaitlistEntry.objects.filter(
+            status=WaitlistEntry.Status.OFFERED,
+            offer_expires_at__gt=now,
+            offered_seat_id__isnull=False,
+        ).values("offered_seat_id")
+        bookable_seats = TripSeat.objects.filter(
+            trip_id=OuterRef("pk"), status=TripSeat.Status.AVAILABLE
+        ).exclude(pk__in=active_offer_seats)
+        trips = trips.filter(Exists(bookable_seats))
+    trip_list = list(trips.order_by(*sort_fields[sort])[:50])
     if trip_list:
         placeholders = ", ".join(["%s"] * len(trip_list))
         with connection.cursor() as cursor:
@@ -75,6 +96,7 @@ def home(request):
             trip.bookable_seats = availability.get(trip.id, 0)
     return render(request, "booking/home.html", {
         "trips": trip_list, "origin": origin, "destination": destination, "date": date,
+        "sort": sort, "only_available": only_available,
     })
 
 
