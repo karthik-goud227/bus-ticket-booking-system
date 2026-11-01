@@ -195,3 +195,5 @@ Oracle. `verify_active_waitlist` then reported that a second active entry for
 the same passenger and trip was rejected with `ORA-00001`. After the first
 entry was changed to `CANCELLED`, a new `WAITING` entry succeeded. The command
 rolled back all verification rows, leaving project data unchanged.
+SQL Developer query 9 showed `UQ_ACTIVE_WAITLIST` as `UNIQUE`,
+`FUNCTION-BASED NORMAL`, and `VALID` in `USER_INDEXES`.

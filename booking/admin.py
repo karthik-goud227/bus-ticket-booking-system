@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Booking, Bus, Payment, Seat, Trip, TripSeat, WaitlistEntry
+from .models import Booking, BookingStatusEvent, Bus, Payment, Seat, Trip, TripSeat, WaitlistEntry
 
 
 class SeatInline(admin.TabularInline):
@@ -52,10 +52,21 @@ class TripSeatAdmin(admin.ModelAdmin):
     list_filter = ("status",)
 
 
+class BookingStatusEventInline(admin.TabularInline):
+    model = BookingStatusEvent
+    extra = 0
+    can_delete = False
+    readonly_fields = ("old_status", "new_status", "changed_at")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = ("reference", "user", "trip", "status", "total_fare", "created_at")
     list_filter = ("status",)
+    inlines = (BookingStatusEventInline,)
 
 
 @admin.register(WaitlistEntry)

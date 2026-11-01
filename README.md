@@ -7,8 +7,8 @@ The application is a local Django web app backed by Oracle Database 21c XE.
 It demonstrates relational design, normalization, keys and constraints,
 Oracle triggers and views, indexed queries, row locking, atomic transactions,
 FIFO waiting-list offers, conditional uniqueness for active queue entries,
-and a Data Pump recovery exercise. Payments and
-refunds are simulated; no real money or bus service is involved.
+an Oracle booking-status audit trail, and a Data Pump recovery exercise.
+Payments and refunds are simulated; no real money or bus service is involved.
 
 ## Requirements
 
@@ -93,6 +93,7 @@ and remove them when finished:
 .\.venv\Scripts\python.exe manage.py verify_waitlist_fifo
 .\.venv\Scripts\python.exe manage.py verify_waitlist_leave
 .\.venv\Scripts\python.exe manage.py verify_active_waitlist
+.\.venv\Scripts\python.exe manage.py verify_booking_audit
 ```
 
 To show a nonempty queue chart without changing your real trip, run
@@ -109,6 +110,10 @@ Developer walkthrough, and
 `docs/dbms_evidence.sql` and `docs/query_plans.sql` in SQL Developer as
 `BUSBOOKING`. `docs/recovery_drill.md` documents the Oracle Data Pump export
 and verified restore into a separate schema.
+
+Booking status events are written by an Oracle trigger from migration `0006`.
+The booking's Django admin page shows its audit rows. Events begin when that
+migration is applied; earlier booking transitions are not reconstructed.
 
 ## Architecture and scope
 

@@ -78,3 +78,11 @@ ORDER BY object_type, object_name;
 SELECT index_name, uniqueness, index_type, status
 FROM user_indexes
 WHERE index_name = 'UQ_ACTIVE_WAITLIST';
+
+-- 10. Show Oracle-written booking status changes after a new booking is made.
+-- Existing bookings from before migration 0006 have no reconstructed history.
+SELECT e.id AS event_id, b.reference, e.old_status, e.new_status, e.changed_at
+FROM booking_bookingstatusevent e
+JOIN booking_booking b ON b.id = e.booking_id
+ORDER BY e.changed_at DESC, e.id DESC
+FETCH FIRST 10 ROWS ONLY;

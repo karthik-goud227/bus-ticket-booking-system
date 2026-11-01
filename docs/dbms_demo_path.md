@@ -17,6 +17,7 @@ the speaking notes in `docs/live_sql_demo.md`.
 | FIFO queue and offer expiry | Two waiting passengers, cancellation, first offer expiry, second offer confirmation | `verify_waitlist_fifo` passed all three checks and removed its test rows |
 | Passenger queue position and exit | Show `v_waitlist_queue` positions in My bookings; leaving an offer passes it to the next passenger | `verify_waitlist_leave` passed all three checks and removed its test rows |
 | Conditional uniqueness | One passenger can have only one active queue entry per trip, but can rejoin after leaving | Oracle function-based unique index in migration `0005`; run `verify_active_waitlist` after migrating |
+| Database audit trail | Show `HELD → CONFIRMED → CANCELLED` as separate Oracle-written rows, including old/new status and timestamp | Migration `0006`, booking admin audit inline, SQL worksheet query 10, and `verify_booking_audit` |
 | Views and analytic SQL | Occupancy, simulated revenue, FIFO queue position | Migration `0004`; run queries after migration |
 | Live queue demand | Staff Insights groups waiting passengers and unexpired offers by trip | `V_WAITLIST_QUEUE` feeds the dashboard; use `preview_waitlist_demand` to show an isolated nonempty chart, then press Enter to clean up |
 | Indexes and optimizer | Trip search and FIFO index definitions, actual execution plans | `docs/query_plans.sql`; do not promise index use on a tiny dataset |

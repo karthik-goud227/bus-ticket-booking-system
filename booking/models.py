@@ -135,3 +135,18 @@ class Payment(models.Model):
             models.CheckConstraint(condition=Q(amount__gte=0), name="ck_payment_amount"),
             models.CheckConstraint(condition=Q(status__in=["CAPTURED", "REFUNDED"]), name="ck_payment_status"),
         ]
+
+
+class BookingStatusEvent(models.Model):
+    """Status history written by an Oracle trigger in migration 0006."""
+
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="status_events")
+    old_status = models.CharField(max_length=12, null=True, blank=True)
+    new_status = models.CharField(max_length=12)
+    changed_at = models.DateTimeField(editable=False)
+
+    class Meta:
+        ordering = ["changed_at", "id"]
+        indexes = [
+            models.Index(fields=["booking", "changed_at", "id"], name="idx_booking_event_order")
+        ]

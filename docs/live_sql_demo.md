@@ -17,6 +17,7 @@ screenshots show an older snapshot.
 | 7. Analytic queue | “`ROW_NUMBER()` gives an ordered position per trip. A cancelled seat is offered to the first waiting passenger.” The view may be empty unless a queue is active. |
 | 8. Objects | “These views and triggers were created by migrations and are valid Oracle objects.” |
 | 9. Conditional uniqueness | “Oracle's function-based unique index prevents duplicate active queue entries, while inactive history remains. The verification command proves rejection and rejoining.” Run after migration `0005`. |
+| 10. Audit trail | “Oracle wrote one event for each booking status transition. The old and new values remain available after the booking's current status changes.” Run after migration `0006` and a new booking; older bookings have no reconstructed events. |
 
 For a nonempty queue, run `manage.py preview_waitlist_demand` in another
 PowerShell window, leave it paused, and run step 7 and open `/insights/`.
