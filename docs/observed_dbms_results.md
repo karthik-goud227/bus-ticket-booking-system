@@ -11,6 +11,9 @@ These results were observed in the local Oracle 21c XE database on 1 November
 - `python manage.py verify_seat_race`: 20 requests used 20 distinct Oracle
   sessions for one seat. Exactly one hold succeeded, 19 conflicted, and one
   held booking remained. The command then removed its test rows.
+- `python manage.py verify_atomic_hold`: an injected failure on the second
+  seat of a two-seat hold left both seats available and created no booking.
+  The command removed its test rows. This passed twice in separate runs.
 
 ## Live booking and reporting views
 
