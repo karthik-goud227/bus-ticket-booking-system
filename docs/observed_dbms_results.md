@@ -101,3 +101,10 @@ The new waiting-list demand panel, sourced from `V_WAITLIST_QUEUE`, displayed
 0 waiting passengers and 0 open seat offers, with its empty state visible.
 This confirms that the staff page renders the queue view when no active demand
 exists; a nonempty demand bar has not yet been observed.
+
+The isolated `preview_waitlist_demand` command later created preview trip 22
+with one `WAITING` passenger and one unexpired `OFFERED` seat, then removed
+its temporary trip, users, bookings, payment, seats, and queue entries after
+Enter was pressed. The command output confirms setup and cleanup. A screenshot
+of the nonempty staff chart has not yet been provided, so its visual state is
+not claimed as observed evidence here.
