@@ -115,3 +115,15 @@ for that cancelled preview booking. The overall dashboard showed 2 trips, 11
 seats, 6 booked seats, and ₹4,194 net while the preview trip was present.
 The screenshots verify the nonempty view; cleanup of this second run should
 be confirmed separately after pressing Enter in the preview command.
+
+## SQL Developer worksheet check
+
+The first run of `docs/live_sql_demo.sql` used the `BUSBOOKING_RESTORE`
+connection rather than the live `BUSBOOKING` schema. It showed seven booking
+tables, 38 check constraints, seven primary keys, 11 foreign keys, five
+unique constraints, and all three views and two triggers `VALID`. Its
+restored report showed 10 of 10 seats booked and ₹6,990 net, consistent with
+the earlier recovery snapshot. The queue view returned no active rows.
+Query 4 raised `ORA-01747` because Oracle requires the seat column named
+`NUMBER` to be quoted in this SQL. The worksheet was corrected to
+`s."NUMBER"`; a rerun of that query is still needed.

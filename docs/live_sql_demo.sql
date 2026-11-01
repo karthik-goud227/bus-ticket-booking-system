@@ -29,13 +29,13 @@ ORDER BY constraint_type;
 
 -- 4. Show the bus -> physical seat -> trip inventory relationship.
 SELECT t.id AS trip_id, t.origin, t.destination,
-       b.registration_number, s.number AS seat_number, ts.status AS seat_status
+       b.registration_number, s."NUMBER" AS seat_number, ts.status AS seat_status
 FROM booking_trip t
 JOIN booking_bus b ON b.id = t.bus_id
 JOIN booking_tripseat ts ON ts.trip_id = t.id
 JOIN booking_seat s ON s.id = ts.seat_id
 WHERE t.origin = 'Kurnool' AND t.destination = 'Vijayawada'
-ORDER BY t.id, s.number;
+ORDER BY t.id, s."NUMBER";
 
 -- 5. Read the occupancy and simulated revenue reporting views together.
 SELECT o.trip_id, o.origin, o.destination, o.total_seats,
