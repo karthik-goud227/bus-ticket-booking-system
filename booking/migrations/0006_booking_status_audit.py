@@ -44,8 +44,10 @@ class Migration(migrations.Migration):
                 )],
             },
         ),
+        # Keep the PL/SQL block as one statement; a plain RunSQL string loses
+        # the final END; terminator when Django splits Oracle SQL statements.
         migrations.RunSQL(
-            sql=AUDIT_TRIGGER,
-            reverse_sql="DROP TRIGGER trg_booking_status_audit",
+            sql=[(AUDIT_TRIGGER, None)],
+            reverse_sql=[("DROP TRIGGER trg_booking_status_audit", None)],
         ),
     ]

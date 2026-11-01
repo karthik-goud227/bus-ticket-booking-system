@@ -197,3 +197,15 @@ entry was changed to `CANCELLED`, a new `WAITING` entry succeeded. The command
 rolled back all verification rows, leaving project data unchanged.
 SQL Developer query 9 showed `UQ_ACTIVE_WAITLIST` as `UNIQUE`,
 `FUNCTION-BASED NORMAL`, and `VALID` in `USER_INDEXES`.
+
+## Audit-trigger migration repair
+
+Migration `0006` created the audit table, but its first trigger definition
+compiled as `INVALID` because the PL/SQL terminator was not preserved by the
+single-string `RunSQL` operation. The initial `verify_booking_audit` run
+stopped on booking insertion with `ORA-04098`; the transaction rolled back.
+Oracle `DBA_ERRORS` showed a missing final semicolon. The trigger was replaced
+with the complete PL/SQL block and then showed `VALID` with no compiler
+errors. Migration `0006` is corrected for fresh installs, and migration
+`0007` repeats the replacement for databases that already applied `0006`.
+The full verification command still needs to be rerun after `0007`.
