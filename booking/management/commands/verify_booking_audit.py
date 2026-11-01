@@ -51,6 +51,8 @@ class Command(BaseCommand):
                 (Booking.Status.HELD, Booking.Status.CONFIRMED),
                 (Booking.Status.CONFIRMED, Booking.Status.CANCELLED),
             ]
+            if transitions and transitions[0][0] == "":
+                transitions[0] = (None, transitions[0][1])
             if transitions != expected:
                 raise CommandError(f"Unexpected Oracle audit transitions: {transitions}")
             self.stdout.write(self.style.SUCCESS(
