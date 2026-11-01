@@ -75,10 +75,12 @@ For the Kurnool-to-Vijayawada trip search, Oracle's `EXPLAIN PLAN` showed:
 The plan lists departure time as a filter rather than an index access
 condition; this distinction is useful when discussing the composite index.
 
-Plan hash value: `3220378848`. Oracle reported dynamic sampling level 2.
-The plan cost of 1 and displayed time of 00:00:01 are optimizer estimates,
-not measured response times. The database currently contains very few trips,
-so this observation does not establish an index performance gain.
+Plan hash value: `3220378848`. The earlier plan reported dynamic sampling
+level 2 and total cost 1. A later run kept the same plan shape and hash,
+with total cost 2. These costs and the displayed time of 00:00:01 are
+optimizer estimates, not measured response times. The database currently
+contains very few trips, so this observation does not establish an index
+performance gain.
 
 ## Backup and restore
 
