@@ -100,7 +100,9 @@ the chart. Press Enter in PowerShell to remove all temporary rows. The seat
 offer lasts 10 minutes; rerun the command if it expires before the screenshot.
 
 Read `docs/er_model.md` for the ER diagram and normalization discussion,
-`docs/dbms_demo_path.md` for the presentation sequence, and
+`docs/dbms_demo_path.md` for the presentation sequence,
+`docs/live_sql_demo.sql` with `docs/live_sql_demo.md` for a read-only SQL
+Developer walkthrough, and
 `docs/observed_dbms_results.md` for recorded local results. Run
 `docs/dbms_evidence.sql` and `docs/query_plans.sql` in SQL Developer as
 `BUSBOOKING`. `docs/recovery_drill.md` documents the Oracle Data Pump export

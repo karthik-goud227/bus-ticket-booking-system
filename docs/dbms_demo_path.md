@@ -2,6 +2,8 @@
 
 Use this as a speaking sequence during the live demo. Show actual database
 output; do not claim a result that has not been observed.
+For a compact SQL Developer walkthrough, use `docs/live_sql_demo.sql` with
+the speaking notes in `docs/live_sql_demo.md`.
 
 | Concept | What to show | Current evidence |
 | --- | --- | --- |
