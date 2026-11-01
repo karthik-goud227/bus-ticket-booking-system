@@ -36,6 +36,20 @@ This confirms that cancellation released seat 7 and recorded a simulated
 refund without altering the original booking. Payments are simulated; no real
 money was transferred.
 
+## Waiting-list promotion and acceptance
+
+After all 10 seats on trip 6 were confirmed, a second passenger joined the
+waiting list. `V_WAITLIST_QUEUE` showed the passenger as `WAITING` at position
+1. The first passenger then cancelled the original single-seat booking for
+seat 6. Oracle showed the waiting entry as `OFFERED` with an assigned seat and
+an expiry deadline. The waiting passenger accepted and confirmed the offered
+seat 6. The final Oracle query returned `ACCEPTED`, 10 booked seats, 0
+available seats, and 100% occupancy.
+
+This demonstrates queue order, a timed offer, and seat reuse after
+cancellation. Only one waiting passenger was observed in this live scenario;
+multiple-person FIFO fairness still needs a separate test before claiming it.
+
 ## Trip-search execution plan
 
 For the Kurnool-to-Vijayawada trip search, Oracle's `EXPLAIN PLAN` showed:
