@@ -49,5 +49,14 @@ returned 10 total seats, 10 booked, 100% occupancy, ₹8,388 captured, ₹1,398
 refunded, and ₹6,990 net.
 
 This verifies that the snapshot's data and database objects were restored into
-an independent schema. It is a point-in-time copy; later changes in the working
-schema will not appear there unless another export and import is performed.
+an independent schema. It was a point-in-time copy; later changes in the working
+schema did not appear there.
+
+## Cleanup after verification
+
+After recording the restored row counts and object validity, the temporary
+`BUSBOOKING_RESTORE` schema was removed from `XEPDB1` with `DROP USER
+BUSBOOKING_RESTORE CASCADE`. Its one idle SQL Developer session had no open
+transaction and was disconnected first. A follow-up `DBA_USERS` query showed
+`BUSBOOKING` remained and `BUSBOOKING_RESTORE` was absent. The working
+application schema and the Data Pump export file were left in place.

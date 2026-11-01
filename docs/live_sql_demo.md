@@ -2,9 +2,9 @@
 
 Connect as `BUSBOOKING` to `XEPDB1`, then open `docs/live_sql_demo.sql`.
 Run one numbered statement at a time. The worksheet only reads data.
-If step 1 says `BUSBOOKING_RESTORE`, switch to the `BUSBOOKING` connection
-for the live app. The restore schema is an older snapshot and its occupancy,
-payment, and queue results can differ.
+Step 1 must say `BUSBOOKING`. The temporary `BUSBOOKING_RESTORE` schema used
+for the recovery drill was removed after verification; its historical
+screenshots show an older snapshot.
 
 | Step | What to say while showing the result |
 | --- | --- |

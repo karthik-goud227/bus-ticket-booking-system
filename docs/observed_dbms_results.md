@@ -132,5 +132,8 @@ confirmed `BUSBOOKING_RESTORE` on `xepdb1`; every seat showed `BOOKED`, as
 expected from the restore snapshot.
 The initial text sort placed seat `10` between `1` and `2`, so the worksheet
 now sorts numeric labels numerically while allowing alphanumeric labels.
-The latest SQL Developer result still showed the old text order, indicating
-the worksheet had not yet been refreshed with the revised `ORDER BY` clause.
+A later SQL Developer result showed seats `1` through `10` in numeric order,
+confirming the revised `ORDER BY` clause. After the recovery evidence was
+captured, an Oracle administrator disconnected the idle restore session and
+dropped `BUSBOOKING_RESTORE` from `XEPDB1`. The final user query showed
+`BUSBOOKING` remained and `BUSBOOKING_RESTORE` was absent.
