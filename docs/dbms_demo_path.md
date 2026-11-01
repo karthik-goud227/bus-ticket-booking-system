@@ -5,7 +5,7 @@ output; do not claim a result that has not been observed.
 
 | Concept | What to show | Current evidence |
 | --- | --- | --- |
-| Relational design and 3NF | Bus, Seat, Trip, TripSeat, Booking, Payment, WaitlistEntry and their keys | `booking/models.py`, `booking/migrations/0001_initial.py`, `docs/dbms_design.md` |
+| Relational design and 3NF | Bus, Seat, Trip, TripSeat, Booking, Payment, WaitlistEntry and their keys | `docs/er_model.md`, `booking/models.py`, `booking/migrations/0001_initial.py` |
 | Entity integrity | Primary keys, foreign keys, unique registration and `(trip, seat)` | `docs/dbms_evidence.sql` constraint query |
 | Domain integrity | Fare, route, time, status, and inventory-state checks | `docs/dbms_evidence.sql` constraint query |
 | Cross-table integrity | Wrong bus seat, wrong booking trip, wrong offered trip rejected | Oracle triggers in migration `0003`; `verify_integrity` passed all three ORA-20001/2/3 checks |
