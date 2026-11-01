@@ -15,7 +15,7 @@ output; do not claim a result that has not been observed.
 | FIFO queue and offer expiry | Two waiting passengers, cancellation, first offer expiry, second offer confirmation | `verify_waitlist_fifo` passed all three checks and removed its test rows |
 | Passenger queue position and exit | Show `v_waitlist_queue` positions in My bookings; leaving an offer passes it to the next passenger | `verify_waitlist_leave` passed all three checks and removed its test rows |
 | Views and analytic SQL | Occupancy, simulated revenue, FIFO queue position | Migration `0004`; run queries after migration |
-| Live queue demand | Staff Insights groups waiting passengers and unexpired offers by trip | `V_WAITLIST_QUEUE` feeds the dashboard's waiting-list counts and comparison bars |
+| Live queue demand | Staff Insights groups waiting passengers and unexpired offers by trip | `V_WAITLIST_QUEUE` feeds the dashboard; use `preview_waitlist_demand` to show an isolated nonempty chart, then press Enter to clean up |
 | Indexes and optimizer | Trip search and FIFO index definitions, actual execution plans | `docs/query_plans.sql`; do not promise index use on a tiny dataset |
 | Recovery | Data Pump export from `BUSBOOKING`, import into `BUSBOOKING_RESTORE`, row and object checks | `docs/recovery_drill.md`; 5 object types counted, three views and two triggers `VALID` |
 

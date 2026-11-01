@@ -93,6 +93,12 @@ and remove them when finished:
 .\.venv\Scripts\python.exe manage.py verify_waitlist_leave
 ```
 
+To show a nonempty queue chart without changing your real trip, run
+`manage.py preview_waitlist_demand` in a separate PowerShell window with
+`DB_PASSWORD` set. While it pauses, refresh `/insights/` as staff and capture
+the chart. Press Enter in PowerShell to remove all temporary rows. The seat
+offer lasts 10 minutes; rerun the command if it expires before the screenshot.
+
 Read `docs/er_model.md` for the ER diagram and normalization discussion,
 `docs/dbms_demo_path.md` for the presentation sequence, and
 `docs/observed_dbms_results.md` for recorded local results. Run
