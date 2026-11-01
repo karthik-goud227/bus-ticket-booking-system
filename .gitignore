@@ -3,5 +3,6 @@ __pycache__/
 *.py[cod]
 .env
 *.log
+*.dmp
 .pytest_cache/
 .DS_Store

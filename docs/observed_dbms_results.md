@@ -72,3 +72,12 @@ Plan hash value: `3220378848`. Oracle reported dynamic sampling level 2.
 The plan cost of 1 and displayed time of 00:00:01 are optimizer estimates,
 not measured response times. The database currently contains very few trips,
 so this observation does not establish an index performance gain.
+
+## Backup and restore
+
+Oracle Data Pump exported `BUSBOOKING` and successfully imported it into the
+separate `BUSBOOKING_RESTORE` schema. Restored counts were 1 trip, 10 trip
+seats, 5 bookings, 5 payments, and 1 waitlist entry. All three reporting views
+and both integrity triggers were `VALID`. The restored report returned 10
+booked seats, 100% occupancy, ₹8,388 captured, ₹1,398 refunded, and ₹6,990
+net. The private dump remained outside Git. See `docs/recovery_drill.md`.

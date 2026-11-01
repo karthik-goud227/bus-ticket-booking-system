@@ -14,7 +14,7 @@ output; do not claim a result that has not been observed.
 | FIFO queue and offer expiry | Two waiting passengers, cancellation, first offer expiry, second offer confirmation | `verify_waitlist_fifo` passed all three checks and removed its test rows |
 | Views and analytic SQL | Occupancy, simulated revenue, FIFO queue position | Migration `0004`; run queries after migration |
 | Indexes and optimizer | Trip search and FIFO index definitions, actual execution plans | `docs/query_plans.sql`; do not promise index use on a tiny dataset |
-| Recovery | Database backup and restore into a separate schema/database | Pending exercise |
+| Recovery | Data Pump export from `BUSBOOKING`, import into `BUSBOOKING_RESTORE`, row and object checks | `docs/recovery_drill.md`; 5 object types counted, three views and two triggers `VALID` |
 
 Presentation order: show the ER model and normalization, then constraints and
 triggers, then a seat booking in the app, then the race result, then reporting
