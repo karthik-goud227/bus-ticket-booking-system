@@ -82,6 +82,16 @@ optimizer estimates, not measured response times. The database currently
 contains very few trips, so this observation does not establish an index
 performance gain.
 
+## FIFO waiting-list execution plan
+
+For trip 6 with `status = 'WAITING'`, a later `EXPLAIN PLAN` showed an
+`INDEX RANGE SCAN` on `IDX_WAITLIST_FIFO`, followed by `TABLE ACCESS BY INDEX
+ROWID` on `BOOKING_WAITLISTENTRY`. The index access predicate used `TRIP_ID`
+and `STATUS`. The plan showed no separate sort operation for the requested
+`JOINED_AT, ID` order. Its plan hash was `1583771041` and total estimated
+cost was 2. The plan supports the index-design explanation but does not
+measure query speed on this small data set.
+
 ## Backup and restore
 
 Oracle Data Pump exported `BUSBOOKING` and successfully imported it into the
