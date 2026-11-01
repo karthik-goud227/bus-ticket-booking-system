@@ -16,7 +16,16 @@ Database rules already implemented:
 - Check constraints for valid statuses, nonnegative fares, trip times, and inventory state.
 - Oracle triggers for cross-table trip, bus, and offered-seat consistency.
 - Indexes for trip search, booking history, and FIFO waitlist order.
+- A unique Oracle function-based index for one active waiting-list entry per
+  passenger and trip. Terminal entries remain as history, so a passenger can
+  join again after leaving. This rule also protects writes outside Django.
 - Oracle row locks and atomic transactions in the booking service.
+
+The active-entry rule is an index rather than a `USER_CONSTRAINTS` row. Oracle
+indexes the `(trip_id, user_id)` pair only for `WAITING` and `OFFERED` rows;
+other statuses produce two null index expressions. Migration `0005` creates
+`UQ_ACTIVE_WAITLIST`, and `verify_active_waitlist` checks both duplicate
+rejection and rejoining after cancellation with rollback-only test data.
 
 Trip search filters route and departure fields. Its substring city matching
 does not guarantee use of the composite trip-search index.

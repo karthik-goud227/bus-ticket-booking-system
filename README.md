@@ -6,7 +6,8 @@ Waiting List, and Cancellation Management**.
 The application is a local Django web app backed by Oracle Database 21c XE.
 It demonstrates relational design, normalization, keys and constraints,
 Oracle triggers and views, indexed queries, row locking, atomic transactions,
-FIFO waiting-list offers, and a Data Pump recovery exercise. Payments and
+FIFO waiting-list offers, conditional uniqueness for active queue entries,
+and a Data Pump recovery exercise. Payments and
 refunds are simulated; no real money or bus service is involved.
 
 ## Requirements
@@ -91,6 +92,7 @@ and remove them when finished:
 .\.venv\Scripts\python.exe manage.py verify_atomic_hold
 .\.venv\Scripts\python.exe manage.py verify_waitlist_fifo
 .\.venv\Scripts\python.exe manage.py verify_waitlist_leave
+.\.venv\Scripts\python.exe manage.py verify_active_waitlist
 ```
 
 To show a nonempty queue chart without changing your real trip, run

@@ -98,6 +98,7 @@ class TripSeat(models.Model):
 
 
 class WaitlistEntry(models.Model):
+    # Oracle migration 0005 adds a function-based unique index for active rows.
     class Status(models.TextChoices):
         WAITING = "WAITING", "Waiting"
         OFFERED = "OFFERED", "Offered"

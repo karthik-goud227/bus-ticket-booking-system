@@ -72,3 +72,9 @@ WHERE object_name IN (
     'TRG_TRIPSEAT_SAME_TRIP_BUS', 'TRG_WAITLIST_OFFER_TRIP'
 )
 ORDER BY object_type, object_name;
+
+-- 9. Show the Oracle function-based unique index for active queue entries.
+-- It appears in USER_INDEXES rather than USER_CONSTRAINTS.
+SELECT index_name, uniqueness, index_type, status
+FROM user_indexes
+WHERE index_name = 'UQ_ACTIVE_WAITLIST';
