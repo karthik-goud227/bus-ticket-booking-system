@@ -208,4 +208,8 @@ Oracle `DBA_ERRORS` showed a missing final semicolon. The trigger was replaced
 with the complete PL/SQL block and then showed `VALID` with no compiler
 errors. Migration `0006` is corrected for fresh installs, and migration
 `0007` repeats the replacement for databases that already applied `0006`.
-The full verification command still needs to be rerun after `0007`.
+Migration `0007` applied successfully. The first full verifier run showed
+the correct three transitions but treated Oracle's empty old status as a
+mismatch; the verifier was corrected. A rerun passed: Oracle audited `HELD`,
+`CONFIRMED`, and `CANCELLED` in order, and the booking and audit test rows
+rolled back together.
