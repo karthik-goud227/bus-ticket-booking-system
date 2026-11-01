@@ -126,4 +126,10 @@ restored report showed 10 of 10 seats booked and ₹6,990 net, consistent with
 the earlier recovery snapshot. The queue view returned no active rows.
 Query 4 raised `ORA-01747` because Oracle requires the seat column named
 `NUMBER` to be quoted in this SQL. The worksheet was corrected to
-`s."NUMBER"`; a rerun of that query is still needed.
+`s."NUMBER"`. A rerun returned all ten Kurnool-to-Vijayawada seat rows for
+bus 10901, confirming the four-table join works. The screenshot showed every
+seat as `BOOKED`, consistent with the restore snapshot, but did not display
+the connected user; its schema is therefore not independently confirmed.
+The initial text sort placed seat `10` between `1` and `2`, so the worksheet
+now sorts numeric labels numerically while allowing alphanumeric labels.
+That revised ordering still needs a rerun in SQL Developer.

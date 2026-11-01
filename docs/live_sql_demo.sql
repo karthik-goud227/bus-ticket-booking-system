@@ -35,7 +35,10 @@ JOIN booking_bus b ON b.id = t.bus_id
 JOIN booking_tripseat ts ON ts.trip_id = t.id
 JOIN booking_seat s ON s.id = ts.seat_id
 WHERE t.origin = 'Kurnool' AND t.destination = 'Vijayawada'
-ORDER BY t.id, s."NUMBER";
+ORDER BY t.id,
+         CASE WHEN REGEXP_LIKE(s."NUMBER", '^[0-9]+$')
+              THEN TO_NUMBER(s."NUMBER") END NULLS LAST,
+         s."NUMBER";
 
 -- 5. Read the occupancy and simulated revenue reporting views together.
 SELECT o.trip_id, o.origin, o.destination, o.total_seats,
