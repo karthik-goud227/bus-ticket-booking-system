@@ -100,11 +100,18 @@ they differ from the earlier 100% occupancy snapshot above.
 The new waiting-list demand panel, sourced from `V_WAITLIST_QUEUE`, displayed
 0 waiting passengers and 0 open seat offers, with its empty state visible.
 This confirms that the staff page renders the queue view when no active demand
-exists; a nonempty demand bar has not yet been observed.
+exists. The nonempty case was observed in a later preview below.
 
 The isolated `preview_waitlist_demand` command later created preview trip 22
 with one `WAITING` passenger and one unexpired `OFFERED` seat, then removed
 its temporary trip, users, bookings, payment, seats, and queue entries after
-Enter was pressed. The command output confirms setup and cleanup. A screenshot
-of the nonempty staff chart has not yet been provided, so its visual state is
-not claimed as observed evidence here.
+Enter was pressed. The command output confirms setup and cleanup for that run.
+
+A second preview screenshot showed temporary trip 23, Queue Demo A to Queue
+Demo B, with 1 waiting passenger and 1 open offer in the `V_WAITLIST_QUEUE`
+dashboard. The demand bar was visible. `V_TRIP_OCCUPANCY` showed 0 of 1 seat
+booked, and `V_TRIP_REVENUE` showed ₹100 captured, ₹100 refunded, and ₹0 net
+for that cancelled preview booking. The overall dashboard showed 2 trips, 11
+seats, 6 booked seats, and ₹4,194 net while the preview trip was present.
+The screenshots verify the nonempty view; cleanup of this second run should
+be confirmed separately after pressing Enter in the preview command.
