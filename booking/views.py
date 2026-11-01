@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import Booking, Trip, TripSeat, WaitlistEntry
+from .models import Booking, Payment, Trip, TripSeat, WaitlistEntry
 from .services import BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, leave_waitlist, refresh_trip
 
 
@@ -213,8 +213,14 @@ def booking_detail(request, booking_id):
     booking = get_object_or_404(
         Booking.objects.select_related("trip", "trip__bus", "user"), id=booking_id, user=request.user,
     )
+    if booking.status == Booking.Status.HELD and booking.hold_expires_at <= timezone.now():
+        refresh_trip(booking.trip_id)
+        booking.refresh_from_db()
     seats = booking.allocated_seats.select_related("seat").order_by("seat__number")
-    return render(request, "booking/booking_detail.html", {"booking": booking, "seats": seats})
+    payment = Payment.objects.filter(booking=booking).first()
+    return render(request, "booking/booking_detail.html", {
+        "booking": booking, "seats": seats, "payment": payment,
+    })
 
 
 @login_required

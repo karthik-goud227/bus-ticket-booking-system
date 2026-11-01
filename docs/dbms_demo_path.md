@@ -10,6 +10,7 @@ output; do not claim a result that has not been observed.
 | Domain integrity | Fare, route, time, status, and inventory-state checks | `docs/dbms_evidence.sql` constraint query |
 | Cross-table integrity | Wrong bus seat, wrong booking trip, wrong offered trip rejected | Oracle triggers in migration `0003`; `verify_integrity` passed all three ORA-20001/2/3 checks |
 | ACID transactions | All selected seats held together or rolled back; payment and status committed together | `booking/services.py`; `verify_atomic_hold` passed twice with failure injected on the second seat |
+| Booking lifecycle and payment join | Open a confirmed and a cancelled booking; compare hold, confirmation, cancellation, capture, and refund timestamps | Passenger booking activity panel reads `Booking` and its related `Payment` row |
 | Concurrency control | 20 independent sessions compete for one seat; one succeeds | `verify_seat_race` output: 1 success, 19 conflicts, 1 held booking |
 | FIFO queue and offer expiry | Two waiting passengers, cancellation, first offer expiry, second offer confirmation | `verify_waitlist_fifo` passed all three checks and removed its test rows |
 | Passenger queue position and exit | Show `v_waitlist_queue` positions in My bookings; leaving an offer passes it to the next passenger | `verify_waitlist_leave` passed all three checks and removed its test rows |

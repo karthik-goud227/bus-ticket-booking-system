@@ -66,7 +66,8 @@ database connection defaults to `localhost:1521/xepdb1`; `DB_DSN` and
    fare and show only trips with bookable seats. Simulate payment to confirm.
 3. View the booking under **My bookings**. A confirmed ticket can be printed.
    Whole-booking cancellation releases its seats and records a simulated full
-   refund.
+   refund. The booking detail page shows the lifecycle timestamps and the
+   related simulated payment record; the printed ticket stays concise.
 4. When a trip is full, another passenger can join the waiting list. A
    cancellation offers a released seat to the first waiting passenger for 10
    minutes. **My bookings** shows the Oracle FIFO queue position and any live
