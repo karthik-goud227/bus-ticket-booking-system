@@ -88,3 +88,16 @@ seats, 5 bookings, 5 payments, and 1 waitlist entry. All three reporting views
 and both integrity triggers were `VALID`. The restored report returned 10
 booked seats, 100% occupancy, ₹8,388 captured, ₹1,398 refunded, and ₹6,990
 net. The private dump remained outside Git. See `docs/recovery_drill.md`.
+
+## Later staff dashboard snapshot
+
+A later `/insights/` screenshot on 1 November 2026 showed trip 6 with 6 of 10
+seats booked (60% occupancy). The report displayed ₹9,087 simulated captured,
+₹4,893 refunded, and ₹4,194 net. These values came from
+`V_TRIP_OCCUPANCY` and `V_TRIP_REVENUE` after additional cancellations, so
+they differ from the earlier 100% occupancy snapshot above.
+
+The new waiting-list demand panel, sourced from `V_WAITLIST_QUEUE`, displayed
+0 waiting passengers and 0 open seat offers, with its empty state visible.
+This confirms that the staff page renders the queue view when no active demand
+exists; a nonempty demand bar has not yet been observed.
