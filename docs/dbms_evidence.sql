@@ -38,6 +38,17 @@ WHERE type = 'TRIGGER'
   AND name IN ('TRG_TRIPSEAT_SAME_TRIP_BUS', 'TRG_WAITLIST_OFFER_TRIP')
 ORDER BY name, sequence;
 
+-- 4b. Reporting views; all should be VALID after migration 0004.
+SELECT object_name, status
+FROM user_objects
+WHERE object_type = 'VIEW'
+  AND object_name IN ('V_TRIP_OCCUPANCY', 'V_TRIP_REVENUE', 'V_WAITLIST_QUEUE')
+ORDER BY object_name;
+
+SELECT * FROM v_trip_occupancy ORDER BY trip_id;
+SELECT * FROM v_trip_revenue ORDER BY trip_id;
+SELECT * FROM v_waitlist_queue ORDER BY trip_id, queue_position;
+
 -- 5. Trip occupancy, including empty trips.
 SELECT t.id AS trip_id, t.origin, t.destination,
        COUNT(ts.id) AS total_seats,
