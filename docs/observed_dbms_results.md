@@ -158,3 +158,12 @@ and refund timestamps were visible where applicable. The four refund amounts
 the two currently confirmed fares (₹699 and ₹3,495) sum to ₹4,194 net.
 This demonstrates the optional one-to-one payment relationship and retention
 of cancelled booking history.
+
+## Live analytic waiting-list view
+
+Before the preview, SQL Developer query 7 returned zero active queue rows.
+While `preview_waitlist_demand` was paused, `V_WAITLIST_QUEUE` returned two
+entries for temporary trip 24: entry 27 was `OFFERED` at queue position 1,
+and entry 28 was `WAITING` at position 2. After the preview command removed
+its temporary rows, rerunning query 7 returned zero rows. The screenshots
+show both the nonempty FIFO order and the cleanup result.
