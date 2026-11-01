@@ -11,6 +11,7 @@ output; do not claim a result that has not been observed.
 | Cross-table integrity | Wrong bus seat, wrong booking trip, wrong offered trip rejected | Oracle triggers in migration `0003`; `verify_integrity` passed all three ORA-20001/2/3 checks |
 | ACID transactions | All selected seats held together or rolled back; payment and status committed together | `booking/services.py`; `verify_atomic_hold` passed twice with failure injected on the second seat |
 | Concurrency control | 20 independent sessions compete for one seat; one succeeds | `verify_seat_race` output: 1 success, 19 conflicts, 1 held booking |
+| FIFO queue and offer expiry | Two waiting passengers, cancellation, first offer expiry, second offer confirmation | `verify_waitlist_fifo` passed all three checks and removed its test rows |
 | Views and analytic SQL | Occupancy, simulated revenue, FIFO queue position | Migration `0004`; run queries after migration |
 | Indexes and optimizer | Trip search and FIFO index definitions, actual execution plans | `docs/query_plans.sql`; do not promise index use on a tiny dataset |
 | Recovery | Database backup and restore into a separate schema/database | Pending exercise |

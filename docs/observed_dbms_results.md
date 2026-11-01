@@ -49,9 +49,14 @@ an expiry deadline. The waiting passenger accepted and confirmed the offered
 seat 6. The final Oracle query returned `ACCEPTED`, 10 booked seats, 0
 available seats, and 100% occupancy.
 
-This demonstrates queue order, a timed offer, and seat reuse after
-cancellation. Only one waiting passenger was observed in this live scenario;
-multiple-person FIFO fairness still needs a separate test before claiming it.
+This demonstrates a timed offer and seat reuse after cancellation. Only one
+waiting passenger was observed in this live scenario.
+
+An isolated `verify_waitlist_fifo` run subsequently tested two waiting
+passengers. The first received the cancelled seat; when that timed offer was
+expired, the second received the seat and confirmed it. All three checks
+passed, and the command removed its test rows. This verifies two-person FIFO
+promotion and offer expiry. Concurrent queue joins remain a separate case.
 
 ## Trip-search execution plan
 
