@@ -148,7 +148,10 @@ def my_bookings(request):
     trip_ids = WaitlistEntry.objects.filter(
         user=request.user, status__in=active_statuses
     ).values_list("trip_id", flat=True).distinct()
-    for trip_id in list(trip_ids):
+    held_trip_ids = Booking.objects.filter(
+        user=request.user, status=Booking.Status.HELD
+    ).values_list("trip_id", flat=True).distinct()
+    for trip_id in sorted(set(trip_ids) | set(held_trip_ids)):
         refresh_trip(trip_id)
     waitlist_entries = list(WaitlistEntry.objects.filter(
         user=request.user, status__in=active_statuses
