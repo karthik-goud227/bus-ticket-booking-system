@@ -1,0 +1,19 @@
+from django.contrib.auth import views as auth_views
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("signup/", views.signup, name="signup"),
+    path("login/", auth_views.LoginView.as_view(template_name="booking/login.html"), name="login"),
+    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("trip/<int:trip_id>/", views.trip_detail, name="trip_detail"),
+    path("trip/<int:trip_id>/hold/", views.create_hold, name="create_hold"),
+    path("trip/<int:trip_id>/waitlist/", views.waitlist_join, name="waitlist_join"),
+    path("waitlist/<int:entry_id>/accept/", views.accept_offer, name="accept_offer"),
+    path("bookings/", views.my_bookings, name="my_bookings"),
+    path("bookings/<int:booking_id>/", views.booking_detail, name="booking_detail"),
+    path("bookings/<int:booking_id>/confirm/", views.confirm, name="confirm"),
+    path("bookings/<int:booking_id>/cancel/", views.cancel, name="cancel"),
+]

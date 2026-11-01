@@ -1,0 +1,138 @@
+from datetime import datetime, time, timedelta
+
+from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_POST
+
+from .models import Booking, Trip, TripSeat, WaitlistEntry
+from .services import BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, refresh_trip
+
+
+def home(request):
+    trips = Trip.objects.select_related("bus").filter(
+        is_cancelled=False, departure_at__gt=timezone.now()
+    ).order_by("departure_at")
+    origin = request.GET.get("origin", "").strip()
+    destination = request.GET.get("destination", "").strip()
+    date = request.GET.get("date", "").strip()
+    if origin:
+        trips = trips.filter(origin__icontains=origin)
+    if destination:
+        trips = trips.filter(destination__icontains=destination)
+    if date:
+        try:
+            chosen = datetime.strptime(date, "%Y-%m-%d").date()
+            start = timezone.make_aware(datetime.combine(chosen, time.min))
+            trips = trips.filter(departure_at__gte=start, departure_at__lt=start + timedelta(days=1))
+        except ValueError:
+            messages.error(request, "Enter a valid travel date.")
+    return render(request, "booking/home.html", {
+        "trips": trips[:50], "origin": origin, "destination": destination, "date": date,
+    })
+
+
+def signup(request):
+    form = UserCreationForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        user = form.save()
+        login(request, user)
+        return redirect("home")
+    return render(request, "booking/signup.html", {"form": form})
+
+
+def trip_detail(request, trip_id):
+    trip = get_object_or_404(Trip.objects.select_related("bus"), id=trip_id)
+    refresh_trip(trip.id)
+    seats = list(TripSeat.objects.filter(trip=trip).select_related("seat").order_by("seat__number"))
+    offered_ids = set(WaitlistEntry.objects.filter(
+        trip=trip, status=WaitlistEntry.Status.OFFERED,
+        offer_expires_at__gt=timezone.now(),
+    ).values_list("offered_seat_id", flat=True))
+    for seat in seats:
+        seat.can_select = seat.status == TripSeat.Status.AVAILABLE and seat.id not in offered_ids
+    available_count = sum(seat.can_select for seat in seats)
+    return render(request, "booking/trip.html", {
+        "trip": trip, "seats": seats, "available_count": available_count,
+    })
+
+
+@login_required
+@require_POST
+def create_hold(request, trip_id):
+    trip = get_object_or_404(Trip, id=trip_id)
+    try:
+        booking = hold_seats(user=request.user, trip=trip, seat_ids=request.POST.getlist("seats"))
+        return redirect("booking_detail", booking_id=booking.id)
+    except (BookingConflict, ValueError) as error:
+        messages.error(request, str(error))
+        return redirect("trip_detail", trip_id=trip_id)
+
+
+@login_required
+@require_POST
+def waitlist_join(request, trip_id):
+    trip = get_object_or_404(Trip, id=trip_id)
+    try:
+        join_waitlist(user=request.user, trip=trip)
+        messages.success(request, "You joined the waiting list. Check My bookings for offers.")
+    except BookingConflict as error:
+        messages.error(request, str(error))
+    return redirect("trip_detail", trip_id=trip_id)
+
+
+@login_required
+@require_POST
+def accept_offer(request, entry_id):
+    entry = get_object_or_404(WaitlistEntry.objects.select_related("trip"), id=entry_id, user=request.user)
+    try:
+        booking = hold_seats(
+            user=request.user, trip=entry.trip, seat_ids=[entry.offered_seat_id], waitlist_entry=entry,
+        )
+        return redirect("booking_detail", booking_id=booking.id)
+    except (BookingConflict, ValueError, TypeError) as error:
+        messages.error(request, str(error))
+        return redirect("my_bookings")
+
+
+@login_required
+def my_bookings(request):
+    bookings = Booking.objects.filter(user=request.user).select_related("trip", "trip__bus").order_by("-created_at")
+    offers = WaitlistEntry.objects.filter(
+        user=request.user, status=WaitlistEntry.Status.OFFERED, offer_expires_at__gt=timezone.now()
+    ).select_related("trip", "offered_seat__seat").order_by("joined_at")
+    return render(request, "booking/my_bookings.html", {"bookings": bookings, "offers": offers})
+
+
+@login_required
+def booking_detail(request, booking_id):
+    booking = get_object_or_404(
+        Booking.objects.select_related("trip", "trip__bus", "user"), id=booking_id, user=request.user,
+    )
+    seats = booking.allocated_seats.select_related("seat").order_by("seat__number")
+    return render(request, "booking/booking_detail.html", {"booking": booking, "seats": seats})
+
+
+@login_required
+@require_POST
+def confirm(request, booking_id):
+    try:
+        booking = confirm_booking(user=request.user, booking_id=booking_id)
+        messages.success(request, "Simulated payment successful. Your seats are confirmed.")
+    except BookingConflict as error:
+        messages.error(request, str(error))
+    return redirect("booking_detail", booking_id=booking_id)
+
+
+@login_required
+@require_POST
+def cancel(request, booking_id):
+    try:
+        cancel_booking(user=request.user, booking_id=booking_id)
+        messages.success(request, "Booking cancelled. A simulated full refund was recorded if you had paid.")
+    except BookingConflict as error:
+        messages.error(request, str(error))
+    return redirect("booking_detail", booking_id=booking_id)

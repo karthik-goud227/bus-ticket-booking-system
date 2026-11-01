@@ -115,3 +115,22 @@ class WaitlistEntry(models.Model):
     class Meta:
         indexes = [models.Index(fields=["trip", "status", "joined_at", "id"], name="idx_waitlist_fifo")]
         constraints = [models.CheckConstraint(condition=Q(status__in=["WAITING", "OFFERED", "ACCEPTED", "EXPIRED", "CANCELLED"]), name="ck_waitlist_status")]
+
+
+class Payment(models.Model):
+    """A simulated payment record; no real money is transferred."""
+    class Status(models.TextChoices):
+        CAPTURED = "CAPTURED", "Captured"
+        REFUNDED = "REFUNDED", "Refunded"
+
+    booking = models.OneToOneField(Booking, on_delete=models.PROTECT, related_name="payment")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.CAPTURED)
+    captured_at = models.DateTimeField(auto_now_add=True)
+    refunded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(amount__gte=0), name="ck_payment_amount"),
+            models.CheckConstraint(condition=Q(status__in=["CAPTURED", "REFUNDED"]), name="ck_payment_status"),
+        ]

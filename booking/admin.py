@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Booking, Bus, Seat, Trip, TripSeat, WaitlistEntry
+from .models import Booking, Bus, Payment, Seat, Trip, TripSeat, WaitlistEntry
 
 
 @admin.register(Bus)
@@ -36,4 +36,10 @@ class BookingAdmin(admin.ModelAdmin):
 @admin.register(WaitlistEntry)
 class WaitlistEntryAdmin(admin.ModelAdmin):
     list_display = ("trip", "user", "status", "joined_at", "offer_expires_at")
+    list_filter = ("status",)
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ("booking", "amount", "status", "captured_at", "refunded_at")
     list_filter = ("status",)
