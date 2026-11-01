@@ -167,3 +167,10 @@ entries for temporary trip 24: entry 27 was `OFFERED` at queue position 1,
 and entry 28 was `WAITING` at position 2. After the preview command removed
 its temporary rows, rerunning query 7 returned zero rows. The screenshots
 show both the nonempty FIFO order and the cleanup result.
+
+## Live Oracle object validity
+
+SQL Developer query 8 returned five `VALID` objects in `BUSBOOKING`: the
+`TRG_TRIPSEAT_SAME_TRIP_BUS` and `TRG_WAITLIST_OFFER_TRIP` integrity triggers,
+and the `V_TRIP_OCCUPANCY`, `V_TRIP_REVENUE`, and `V_WAITLIST_QUEUE` reporting
+views. This completed the eight-query read-only SQL worksheet walkthrough.
