@@ -146,3 +146,15 @@ Vijayawada: 10 total seats, 6 booked, 4 available, and 60% occupancy.
 Simulated payments showed ₹9,087 captured, ₹4,893 refunded, and ₹4,194 net.
 This is a live-schema snapshot taken after the temporary restore account was
 removed; the figures can change when bookings change.
+SQL Developer query 5 independently displayed the same row and amounts.
+
+## Live booking and payment join
+
+SQL Developer query 6 returned seven recent bookings. One `EXPIRED` hold had
+no payment row, two `CONFIRMED` bookings had `CAPTURED` payment rows, and four
+`CANCELLED` bookings had `REFUNDED` payment rows. Confirmation, cancellation,
+and refund timestamps were visible where applicable. The four refund amounts
+(₹699, ₹2,796, ₹699, and ₹699) sum to ₹4,893, matching the revenue view;
+the two currently confirmed fares (₹699 and ₹3,495) sum to ₹4,194 net.
+This demonstrates the optional one-to-one payment relationship and retention
+of cancelled booking history.
