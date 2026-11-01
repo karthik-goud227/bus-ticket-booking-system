@@ -56,8 +56,25 @@ def home(request):
             trips = trips.filter(departure_at__gte=start, departure_at__lt=start + timedelta(days=1))
         except ValueError:
             messages.error(request, "Enter a valid travel date.")
+    trip_list = list(trips[:50])
+    if trip_list:
+        placeholders = ", ".join(["%s"] * len(trip_list))
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT o.trip_id, "
+                "(SELECT COUNT(*) FROM booking_tripseat ts "
+                " WHERE ts.trip_id = o.trip_id AND ts.status = 'AVAILABLE' "
+                " AND NOT EXISTS (SELECT 1 FROM booking_waitlistentry w "
+                " WHERE w.offered_seat_id = ts.id AND w.status = 'OFFERED' "
+                " AND w.offer_expires_at > %s)) AS bookable_seats "
+                f"FROM v_trip_occupancy o WHERE o.trip_id IN ({placeholders})",
+                [timezone.now(), *[trip.id for trip in trip_list]],
+            )
+            availability = dict(cursor.fetchall())
+        for trip in trip_list:
+            trip.bookable_seats = availability.get(trip.id, 0)
     return render(request, "booking/home.html", {
-        "trips": trips[:50], "origin": origin, "destination": destination, "date": date,
+        "trips": trip_list, "origin": origin, "destination": destination, "date": date,
     })
 
 
