@@ -137,3 +137,12 @@ confirming the revised `ORDER BY` clause. After the recovery evidence was
 captured, an Oracle administrator disconnected the idle restore session and
 dropped `BUSBOOKING_RESTORE` from `XEPDB1`. The final user query showed
 `BUSBOOKING` remained and `BUSBOOKING_RESTORE` was absent.
+
+## Live reporting view after restore cleanup
+
+A read-only Oracle query against `BUSBOOKING.V_TRIP_OCCUPANCY` joined to
+`BUSBOOKING.V_TRIP_REVENUE` in `XEPDB1` returned trip 6, Kurnool to
+Vijayawada: 10 total seats, 6 booked, 4 available, and 60% occupancy.
+Simulated payments showed ₹9,087 captured, ₹4,893 refunded, and ₹4,194 net.
+This is a live-schema snapshot taken after the temporary restore account was
+removed; the figures can change when bookings change.
