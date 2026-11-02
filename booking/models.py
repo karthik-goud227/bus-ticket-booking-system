@@ -183,3 +183,15 @@ class BookingStatusEvent(models.Model):
         indexes = [
             models.Index(fields=["booking", "changed_at", "id"], name="idx_booking_event_order")
         ]
+
+
+class LoginEvent(models.Model):
+    """A successful sign-in, retained for optional staff inspection."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="login_events")
+    occurred_at = models.DateTimeField(auto_now_add=True)
+    source = models.CharField(max_length=12, choices=[("SITE", "Website"), ("ADMIN", "Admin")])
+
+    class Meta:
+        ordering = ["-occurred_at", "-id"]
+        indexes = [models.Index(fields=["user", "occurred_at"], name="idx_login_user_time")]

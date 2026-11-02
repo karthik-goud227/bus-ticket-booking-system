@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.db.models import Count
 
-from .models import Booking, BookingStatusEvent, Bus, Payment, Seat, Trip, TripSeat, WaitlistEntry
+from .models import Booking, BookingStatusEvent, Bus, LoginEvent, Payment, Seat, Trip, TripSeat, WaitlistEntry
 
 admin.site.site_header = "BusBook administration"
 admin.site.site_title = "BusBook admin"
@@ -162,6 +162,18 @@ class BookingStatusEventAdmin(admin.ModelAdmin):
     search_fields = ("booking__reference", "booking__user__username")
     readonly_fields = ("booking", "old_status", "new_status", "changed_at")
     list_select_related = ("booking",)
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(LoginEvent)
+class LoginEventAdmin(admin.ModelAdmin):
+    list_display = ("user", "occurred_at", "source")
+    list_filter = ("source", "occurred_at")
+    search_fields = ("user__username", "user__email")
+    readonly_fields = ("user", "occurred_at", "source")
+    list_select_related = ("user",)
 
     def has_add_permission(self, request):
         return False
