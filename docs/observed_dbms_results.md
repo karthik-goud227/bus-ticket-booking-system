@@ -239,3 +239,14 @@ confirmed first offer, expiry promotion, and second-passenger acceptance.
 `verify_waitlist_leave` confirmed FIFO positions, transfer of a declined
 offer, and the updated Oracle queue position. Both commands removed their
 temporary data.
+
+## Fleet expansion and recurring schedule
+
+On 2 November 2026, migration `booking.0012_fleet_layout_and_passengers`
+applied successfully. The existing-fleet upgrade reported 14 buses expanded,
+150 physical seats added, and 354 trip-seat inventory rows added, while keeping
+existing bookings. Generating the next 14 days of recurring trips created 77
+dated trips and skipped seven time slots already occupied by a bus. The
+read-only `verify_fleet_layout` command then passed: all 14 buses have at
+least 24 seats, all 111 trips have complete trip-seat inventory, three buses
+have upper and lower decks, and 80 physical places are sleeping berths.
