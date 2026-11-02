@@ -50,6 +50,10 @@ def _expire_offers(trip_id, now):
 
 def _offer_next(trip_id, available_seats, now):
     """Assign available seats to the FIFO queue before direct buyers can use them."""
+    if not Trip.objects.filter(
+        id=trip_id, is_cancelled=False, bus__is_active=True, departure_at__gt=now
+    ).exists():
+        return
     for seat in available_seats:
         if seat.status != TripSeat.Status.AVAILABLE:
             continue
@@ -90,7 +94,7 @@ def hold_seats(*, user, trip, seat_ids, waitlist_entry=None):
     if not ids or len(ids) > 6:
         raise BookingConflict("Choose between one and six seats.")
     trip = Trip.objects.select_for_update().get(id=trip.id)
-    if trip.is_cancelled or trip.departure_at <= now:
+    if trip.is_cancelled or not trip.bus.is_active or trip.departure_at <= now:
         raise BookingConflict("This trip is no longer open for booking.")
     released = _release_expired(trip.id, now)
     released.extend(_expire_offers(trip.id, now))
@@ -185,7 +189,7 @@ def cancel_booking(*, user, booking_id):
 @transaction.atomic
 def join_waitlist(*, user, trip):
     trip = Trip.objects.select_for_update().get(id=trip.id)
-    if trip.is_cancelled or trip.departure_at <= timezone.now():
+    if trip.is_cancelled or not trip.bus.is_active or trip.departure_at <= timezone.now():
         raise BookingConflict("This trip is no longer open.")
     now = timezone.now()
     released = _release_expired(trip.id, now)

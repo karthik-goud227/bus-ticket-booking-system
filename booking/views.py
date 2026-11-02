@@ -63,7 +63,7 @@ def insights(request):
 def home(request):
     now = timezone.now()
     trips = Trip.objects.select_related("bus").filter(
-        is_cancelled=False, departure_at__gt=now
+        is_cancelled=False, bus__is_active=True, departure_at__gt=now
     )
     origin = request.GET.get("origin", "").strip()
     destination = request.GET.get("destination", "").strip()
@@ -133,6 +133,7 @@ def signup(request):
 def trip_detail(request, trip_id):
     trip = get_object_or_404(Trip.objects.select_related("bus"), id=trip_id)
     refresh_trip(trip.id)
+    trip_open = not trip.is_cancelled and trip.bus.is_active and trip.departure_at > timezone.now()
     seats = list(TripSeat.objects.filter(trip=trip).select_related("seat"))
     seats.sort(key=lambda inventory: [
         (0, int(part)) if part.isdigit() else (1, part.lower())
@@ -143,11 +144,11 @@ def trip_detail(request, trip_id):
         offer_expires_at__gt=timezone.now(),
     ).values_list("offered_seat_id", flat=True))
     for seat in seats:
-        seat.can_select = seat.status == TripSeat.Status.AVAILABLE and seat.id not in offered_ids
+        seat.can_select = trip_open and seat.status == TripSeat.Status.AVAILABLE and seat.id not in offered_ids
     available_count = sum(seat.can_select for seat in seats)
     return render(request, "booking/trip.html", {
         "trip": trip, "seat_rows": [seats[i:i + 4] for i in range(0, len(seats), 4)],
-        "available_count": available_count,
+        "available_count": available_count, "trip_open": trip_open,
     })
 
 

@@ -73,11 +73,12 @@ WHERE object_name IN (
 )
 ORDER BY object_type, object_name;
 
--- 9. Show the Oracle function-based unique index for active queue entries.
--- It appears in USER_INDEXES rather than USER_CONSTRAINTS.
+-- 9. Show both Oracle function-based unique indexes for active queue rules.
+-- They appear in USER_INDEXES rather than USER_CONSTRAINTS.
 SELECT index_name, uniqueness, index_type, status
 FROM user_indexes
-WHERE index_name = 'UQ_ACTIVE_WAITLIST';
+WHERE index_name IN ('UQ_ACTIVE_WAITLIST', 'UQ_ACTIVE_OFFER_SEAT')
+ORDER BY index_name;
 
 -- 10. Show Oracle-written booking status changes after a new booking is made.
 -- Existing bookings from before migration 0006 have no reconstructed history.

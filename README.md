@@ -80,6 +80,8 @@ database connection defaults to `localhost:1521/xepdb1`; `DB_DSN` and
 Expired holds and offers are processed when the trip seat map is accessed.
 Run `manage.py process_expiries` periodically if you want automatic cleanup
 while no one is browsing. Repeated runs are safe.
+Cancelled, departed, and inactive-bus trips cannot accept new holds or queue
+entries. Their seat map shows booking as closed.
 
 ## DBMS verification
 
@@ -94,6 +96,7 @@ and remove them when finished:
 .\.venv\Scripts\python.exe manage.py verify_waitlist_leave
 .\.venv\Scripts\python.exe manage.py verify_active_waitlist
 .\.venv\Scripts\python.exe manage.py verify_booking_audit
+.\.venv\Scripts\python.exe manage.py verify_offer_rules
 ```
 
 To show a nonempty queue chart without changing your real trip, run

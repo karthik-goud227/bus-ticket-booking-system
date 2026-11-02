@@ -8,7 +8,8 @@
   <div class="fare-block"><small>PER SEAT</small><strong>₹{{ trip.fare }}</strong></div>
 </section>
 <div class="row g-4"><div class="col-lg-8"><section class="card p-4 p-md-5">
-  <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap"><div><span class="eyebrow text-primary">SEAT MAP</span><h2 class="h4 mb-0">Choose your seats</h2></div><span class="badge badge-soft">{{ available_count }} available</span></div>
+  <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap"><div><span class="eyebrow text-primary">SEAT MAP</span><h2 class="h4 mb-0">{% if trip_open %}Choose your seats{% else %}Booking closed{% endif %}</h2></div><span class="badge badge-soft">{{ available_count }} available</span></div>
+  {% if not trip_open %}<div class="ticket-note mt-3">{% if trip.is_cancelled %}This trip has been cancelled.{% elif not trip.bus.is_active %}This bus is currently inactive.{% else %}This trip has already departed.{% endif %} Seat booking and waiting-list offers are closed.</div>{% endif %}
   <div class="seat-legend mt-3 mb-4"><span><i class="legend-dot available"></i>Available</span><span><i class="legend-dot selected"></i>Selected</span><span><i class="legend-dot unavailable"></i>Booked / unavailable</span></div>
   <form method="post" action="{% url 'create_hold' trip.id %}" id="seat-form" data-fare="{{ trip.fare }}">{% csrf_token %}
     <div class="bus-frame"><div class="bus-front"><span>FRONT OF BUS</span><span aria-hidden="true">◉</span></div>
@@ -39,8 +40,8 @@
   </form>
 </section></div>
 <div class="col-lg-4"><section class="card p-4 mb-4"><span class="eyebrow text-primary">HOW IT WORKS</span><h2 class="h5">Your seats are protected</h2><p class="text-secondary">Selected seats are held for 10 minutes. Oracle checks availability again when you reserve them.</p></section>
-<section class="card p-4"><span class="eyebrow text-primary">FULL TRIP?</span><h2 class="h5">Join the waiting list</h2><p class="text-secondary">When a booking is cancelled, the next passenger receives a timed offer.</p>
-<form method="post" action="{% url 'waitlist_join' trip.id %}">{% csrf_token %}<button class="btn btn-outline-primary w-100">Join waiting list</button></form></section></div></div>
+{% if trip_open and available_count == 0 %}<section class="card p-4"><span class="eyebrow text-primary">FULL TRIP?</span><h2 class="h5">Join the waiting list</h2><p class="text-secondary">When a booking is cancelled, the next passenger receives a timed offer.</p>
+<form method="post" action="{% url 'waitlist_join' trip.id %}">{% csrf_token %}<button class="btn btn-outline-primary w-100">Join waiting list</button></form></section>{% endif %}</div></div>
 <script>
   const form = document.getElementById('seat-form');
   const checks = [...form.querySelectorAll('.seat-check')];

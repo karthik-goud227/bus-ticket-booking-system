@@ -16,7 +16,7 @@ screenshots show an older snapshot.
 | 6. Payment join | “The payment table is separate and one-to-one with a booking. A cancelled hold has no payment row; a cancelled confirmed booking has a refunded row.” No real payment occurs. |
 | 7. Analytic queue | “`ROW_NUMBER()` gives an ordered position per trip. A cancelled seat is offered to the first waiting passenger.” The view may be empty unless a queue is active. |
 | 8. Objects | “These views and triggers were created by migrations and are valid Oracle objects.” |
-| 9. Conditional uniqueness | “Oracle's function-based unique index prevents duplicate active queue entries, while inactive history remains. The verification command proves rejection and rejoining.” Run after migration `0005`. |
+| 9. Conditional uniqueness | “Two Oracle function-based unique indexes prevent duplicate active passengers and duplicate live offers for a seat, while inactive history remains.” Run after migration `0008`; `verify_active_waitlist` and `verify_offer_rules` prove the rules. |
 | 10. Audit trail | “Oracle wrote one event for each booking status transition. The old and new values remain available after the booking's current status changes.” Run after migration `0006` and a new booking; older bookings have no reconstructed events. |
 
 For a nonempty queue, run `manage.py preview_waitlist_demand` in another

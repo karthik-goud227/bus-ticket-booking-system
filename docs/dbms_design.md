@@ -39,6 +39,13 @@ worksheet expose the rows. `verify_booking_audit` exercises a hold,
 confirmation, and cancellation, then rolls back both the booking and its
 audit rows.
 
+Migration `0008` adds two active waiting-list state checks: an `OFFERED` row
+must have a seat and expiry time, while a `WAITING` row must have neither.
+`UQ_ACTIVE_OFFER_SEAT` is a second function-based unique index that prevents
+two live offers for the same trip seat. Historical accepted, expired, and
+cancelled entries can still refer to a seat as appropriate. The booking
+service also stops new offers for cancelled, departed, or inactive-bus trips.
+
 Trip search filters route and departure fields. Its substring city matching
 does not guarantee use of the composite trip-search index.
 The optional "seats available only" control uses a correlated `EXISTS`

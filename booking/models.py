@@ -115,7 +115,24 @@ class WaitlistEntry(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=["trip", "status", "joined_at", "id"], name="idx_waitlist_fifo")]
-        constraints = [models.CheckConstraint(condition=Q(status__in=["WAITING", "OFFERED", "ACCEPTED", "EXPIRED", "CANCELLED"]), name="ck_waitlist_status")]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(status__in=["WAITING", "OFFERED", "ACCEPTED", "EXPIRED", "CANCELLED"]),
+                name="ck_waitlist_status",
+            ),
+            models.CheckConstraint(
+                condition=~Q(status="OFFERED") | (
+                    Q(offered_seat__isnull=False) & Q(offer_expires_at__isnull=False)
+                ),
+                name="ck_offer_complete",
+            ),
+            models.CheckConstraint(
+                condition=~Q(status="WAITING") | (
+                    Q(offered_seat__isnull=True) & Q(offer_expires_at__isnull=True)
+                ),
+                name="ck_waiting_no_offer",
+            ),
+        ]
 
 
 class Payment(models.Model):
