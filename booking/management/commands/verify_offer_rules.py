@@ -66,7 +66,6 @@ class Command(BaseCommand):
 
             expect_oracle_error("ORA-02290", lambda: WaitlistEntry.objects.create(
                 user=second_user, trip=trip, status=WaitlistEntry.Status.OFFERED,
-                offered_seat=inventory,
             ))
             expect_oracle_error("ORA-02290", lambda: WaitlistEntry.objects.create(
                 user=second_user, trip=trip, status=WaitlistEntry.Status.WAITING,
