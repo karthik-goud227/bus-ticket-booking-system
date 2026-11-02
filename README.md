@@ -13,6 +13,11 @@ Payments and refunds are simulated; no real money or bus service is involved.
 **Team manual (PDF):** [Download the illustrated user manual](docs/BusBook_Team_User_Manual.pdf)
 for starting the app offline or on a shared network and using its features.
 
+**Detailed project report:** [Read the PDF](docs/BusBook_Detailed_Project_Report.pdf)
+or [edit the Markdown source](docs/full_project_report.md). It documents the
+technical and Oracle architecture, DBMS concepts, features, verification,
+current live snapshot, and future scope.
+
 **New to this repository?** Follow the [complete installation and network
 guide](docs/setup_and_network.md). It covers a fresh computer, an offline
 demonstration, sharing on college Wi-Fi or a hotspot, and what public internet
