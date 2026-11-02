@@ -59,6 +59,10 @@ database connection defaults to `localhost:1521/xepdb1`; `DB_DSN` and
 
 ## First use
 
+For teammates using the app on the same Wi-Fi and separate personal accounts,
+follow [the team access guide](docs/team_access.md). GitHub access is separate
+from app accounts; teammates need only a browser for shared-app testing.
+
 1. Sign in to `/admin/` with the Django superuser. Add a bus and its physical
    seats together, then add a future trip using that bus. The admin creates
    one `TripSeat` inventory row per bus seat for the new trip.
