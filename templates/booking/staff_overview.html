@@ -1,0 +1,15 @@
+{% extends 'booking/base.html' %}
+{% block title %}Operations overview · BusBook{% endblock %}
+{% block content %}
+<header class="staff-heading"><div><span class="eyebrow">STAFF OVERVIEW</span><h1>Operations at a glance</h1><p>Current totals from the Oracle project tables.</p></div><a class="btn btn-outline-primary" href="{% url 'staff_revenue' %}">View revenue</a></header>
+<div class="staff-metrics">
+  <a class="staff-metric" href="{% url 'admin:booking_bus_changelist' %}"><span>Buses</span><strong>{{ bus_count }}</strong><small>{{ active_bus_count }} active</small></a>
+  <a class="staff-metric" href="{% url 'admin:booking_trip_changelist' %}"><span>Trips</span><strong>{{ trip_count }}</strong><small>{{ upcoming_trip_count }} upcoming</small></a>
+  <a class="staff-metric" href="{% url 'admin:booking_seat_changelist' %}"><span>Physical seats</span><strong>{{ seat_count }}</strong><small>{{ trip_seat_count }} trip-seat records</small></a>
+  <a class="staff-metric" href="{% url 'admin:auth_user_changelist' %}"><span>Passengers</span><strong>{{ passenger_count }}</strong><small>Non-staff accounts</small></a>
+  <a class="staff-metric" href="{% url 'admin:booking_booking_changelist' %}"><span>Total bookings</span><strong>{{ booking_count }}</strong><small>All booking statuses</small></a>
+  <a class="staff-metric" href="{% url 'admin:booking_booking_changelist' %}?status__exact=CANCELLED"><span>Cancellations</span><strong>{{ cancelled_count }}</strong><small>Cancelled bookings</small></a>
+</div>
+<section class="staff-section"><div class="d-flex justify-content-between align-items-center flex-wrap gap-2"><div><span class="eyebrow">BOOKING LIFECYCLE</span><h2>Current booking states</h2></div><a href="{% url 'admin:booking_booking_changelist' %}">Browse bookings →</a></div><div class="staff-state-grid"><div><strong>{{ held_count }}</strong><span>Held</span></div><div><strong>{{ confirmed_count }}</strong><span>Confirmed</span></div><div><strong>{{ cancelled_count }}</strong><span>Cancelled</span></div><div><strong>{{ expired_count }}</strong><span>Expired</span></div></div></section>
+<p class="staff-footnote">{{ queue_count }} active waiting-list entries. Physical seats are counted once per bus; trip-seat records represent inventory on scheduled trips.</p>
+{% endblock %}

@@ -100,7 +100,10 @@ prints the teammate link; restart it after changing Wi-Fi or hotspot.
    minutes. **My bookings** shows the Oracle FIFO queue position and any live
    offer. A passenger can leave the list; declining an offer passes that seat
    to the next waiting passenger.
-5. Admin users can open `/insights/` for occupancy, simulated revenue, and
+5. Admin users can open `/staff/overview/` for fleet, passenger, booking, and
+   cancellation totals, or `/staff/revenue/` for captured, refunded, and net
+   simulated amounts by trip. Both pages are linked from `/admin/`.
+6. Admin users can open `/insights/` for occupancy, simulated revenue, and
    active waiting-list demand sourced from Oracle reporting views.
 
 Expired holds and offers are processed when the trip seat map is accessed.

@@ -17,3 +17,5 @@
 .module h2, .module caption, .inline-group h2 { background: var(--secondary); }
 .object-tools a, input[type=submit], .button { border-radius: 5px; }
 .results { overflow-x: auto; }
+.busbook-admin-links { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 24px; }
+.busbook-admin-links a { padding:11px 16px; border:1px solid #bcd4df; border-radius:7px; background:var(--body-bg); font-weight:700; text-decoration:none; }

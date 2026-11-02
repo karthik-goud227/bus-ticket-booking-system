@@ -1,0 +1,5 @@
+{% extends "admin/index.html" %}
+{% block content %}
+<div class="busbook-admin-links"><a href="{% url 'staff_overview' %}">Operations overview</a><a href="{% url 'staff_revenue' %}">Revenue and refunds</a><a href="{% url 'insights' %}">Trip insights</a></div>
+{{ block.super }}
+{% endblock %}

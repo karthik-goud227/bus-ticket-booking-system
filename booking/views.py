@@ -3,17 +3,65 @@ import re
 
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import connection
 from django.db.models import Exists, OuterRef
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import Booking, Payment, Trip, TripSeat, WaitlistEntry
+from .models import Booking, Bus, Payment, Seat, Trip, TripSeat, WaitlistEntry
 from .services import BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, leave_waitlist, refresh_trip
+
+
+@staff_member_required
+def staff_overview(request):
+    """Operational counts from the project's Oracle-backed tables."""
+    status_counts = dict(Booking.objects.values_list("status").annotate(total=Count("id")))
+    return render(request, "booking/staff_overview.html", {
+        "bus_count": Bus.objects.count(),
+        "active_bus_count": Bus.objects.filter(is_active=True).count(),
+        "trip_count": Trip.objects.count(),
+        "upcoming_trip_count": Trip.objects.filter(is_cancelled=False, departure_at__gt=timezone.now()).count(),
+        "seat_count": Seat.objects.count(),
+        "trip_seat_count": TripSeat.objects.count(),
+        "passenger_count": get_user_model().objects.filter(is_staff=False).count(),
+        "booking_count": Booking.objects.count(),
+        "held_count": status_counts.get(Booking.Status.HELD, 0),
+        "confirmed_count": status_counts.get(Booking.Status.CONFIRMED, 0),
+        "cancelled_count": status_counts.get(Booking.Status.CANCELLED, 0),
+        "expired_count": status_counts.get(Booking.Status.EXPIRED, 0),
+        "queue_count": WaitlistEntry.objects.filter(status__in=[WaitlistEntry.Status.WAITING, WaitlistEntry.Status.OFFERED]).count(),
+    })
+
+
+@staff_member_required
+def staff_revenue(request):
+    """Simulated financial totals calculated by the Oracle revenue view."""
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT r.trip_id, r.origin, r.destination, r.captured_amount,
+                   r.refunded_amount, r.net_amount, o.booked_seats
+            FROM v_trip_revenue r
+            JOIN v_trip_occupancy o ON o.trip_id = r.trip_id
+            ORDER BY r.net_amount DESC, r.trip_id DESC
+        """)
+        columns = [column[0].lower() for column in cursor.description]
+        trips = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    from decimal import Decimal
+    zero = Decimal("0.00")
+    return render(request, "booking/staff_revenue.html", {
+        "trips": trips,
+        "captured_amount": sum((row["captured_amount"] for row in trips), zero),
+        "refunded_amount": sum((row["refunded_amount"] for row in trips), zero),
+        "net_amount": sum((row["net_amount"] for row in trips), zero),
+        "captured_count": Payment.objects.filter(status=Payment.Status.CAPTURED).count(),
+        "refunded_count": Payment.objects.filter(status=Payment.Status.REFUNDED).count(),
+    })
 
 
 @staff_member_required
