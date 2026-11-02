@@ -7,6 +7,7 @@
   <title>{% block title %}BusBook{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'booking/foundation.css' %}">
   <link rel="stylesheet" href="{% static 'booking/app.css' %}?v=20261101-queue">
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
 <nav class="navbar navbar-dark navbar-expand-lg mb-4">

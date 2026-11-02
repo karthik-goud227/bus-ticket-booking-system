@@ -54,8 +54,10 @@ def staff_revenue(request):
         trips = [dict(zip(columns, row)) for row in cursor.fetchall()]
     from decimal import Decimal
     zero = Decimal("0.00")
+    show_all = request.GET.get("all") == "1"
     return render(request, "booking/staff_revenue.html", {
-        "trips": trips,
+        "trips": trips if show_all else [row for row in trips if row["captured_amount"] or row["refunded_amount"]],
+        "show_all": show_all,
         "captured_amount": sum((row["captured_amount"] for row in trips), zero),
         "refunded_amount": sum((row["refunded_amount"] for row in trips), zero),
         "net_amount": sum((row["net_amount"] for row in trips), zero),

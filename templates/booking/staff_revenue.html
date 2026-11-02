@@ -1,8 +1,25 @@
 {% extends 'booking/base.html' %}
+{% load static %}
 {% block title %}Revenue · BusBook{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'booking/staff.css' %}?v=2">{% endblock %}
 {% block content %}
-<header class="staff-heading"><div><span class="eyebrow">ORACLE REVENUE VIEW</span><h1>Revenue and refunds</h1><p>Simulated payment totals from V_TRIP_REVENUE.</p></div><a class="btn btn-outline-primary" href="{% url 'staff_overview' %}">Operations overview</a></header>
-<div class="staff-metrics staff-metrics-revenue"><div class="staff-metric"><span>Captured amount</span><strong>₹{{ captured_amount|floatformat:2 }}</strong><small>Before refunds</small></div><div class="staff-metric"><span>Refunded amount</span><strong>₹{{ refunded_amount|floatformat:2 }}</strong><small>{{ refunded_count }} refunded payments</small></div><div class="staff-metric staff-metric-emphasis"><span>Net simulated revenue</span><strong>₹{{ net_amount|floatformat:2 }}</strong><small>{{ captured_count }} currently captured payments</small></div></div>
-<section class="staff-section"><div class="d-flex justify-content-between align-items-center flex-wrap gap-2"><div><span class="eyebrow">PER-TRIP BREAKDOWN</span><h2>Where revenue came from</h2></div><a href="{% url 'admin:booking_payment_changelist' %}">Browse payments →</a></div><div class="staff-table-wrap"><table class="staff-table"><thead><tr><th>Trip</th><th>Booked seats</th><th>Captured</th><th>Refunded</th><th>Net</th></tr></thead><tbody>{% for trip in trips %}<tr><td>{{ trip.origin }} → {{ trip.destination }} <small>#{{ trip.trip_id }}</small></td><td>{{ trip.booked_seats }}</td><td>₹{{ trip.captured_amount|floatformat:2 }}</td><td>₹{{ trip.refunded_amount|floatformat:2 }}</td><td><strong>₹{{ trip.net_amount|floatformat:2 }}</strong></td></tr>{% empty %}<tr><td colspan="5">No trips yet.</td></tr>{% endfor %}</tbody></table></div></section>
-<p class="staff-footnote">Captured means the simulated amount originally recorded. Refunded is shown separately. Net equals captured less refunded; no real money is transferred.</p>
+<div class="staff-page">
+  <header class="staff-page-header"><div><span class="eyebrow">FINANCIAL REPORT</span><h1>Revenue and refunds</h1><p>Simulated payments, calculated from Oracle reporting views.</p></div><a class="staff-secondary-link" href="{% url 'staff_overview' %}">← Operations overview</a></header>
+  <section class="staff-panel" aria-labelledby="revenue-summary">
+    <div class="staff-panel-header"><div><span class="eyebrow">SUMMARY</span><h2 id="revenue-summary">Payment totals</h2></div><span class="staff-source">Source: V_TRIP_REVENUE</span></div>
+    <div class="staff-table-scroll"><table class="staff-report-table staff-summary-table"><thead><tr><th scope="col">Measure</th><th scope="col">Amount</th><th scope="col">Explanation</th></tr></thead><tbody>
+      <tr><th scope="row">Captured</th><td class="money">₹{{ captured_amount|floatformat:2 }}</td><td>Original simulated payments</td></tr>
+      <tr><th scope="row">Refunded</th><td class="money">₹{{ refunded_amount|floatformat:2 }}</td><td>{{ refunded_count }} refunded payment records</td></tr>
+      <tr class="total-row"><th scope="row">Net revenue</th><td class="money">₹{{ net_amount|floatformat:2 }}</td><td>Captured less refunded</td></tr>
+    </tbody></table></div>
+  </section>
+  <section class="staff-panel" aria-labelledby="trip-revenue">
+    <div class="staff-panel-header"><div><span class="eyebrow">TRIP BREAKDOWN</span><h2 id="trip-revenue">Revenue by trip</h2></div><div class="staff-panel-actions">{% if show_all %}<a href="{% url 'staff_revenue' %}">Show trips with payments</a>{% else %}<a href="?all=1">Show all trips</a>{% endif %}<a href="{% url 'admin:booking_payment_changelist' %}">Payment records →</a></div></div>
+    <div class="staff-table-scroll"><table class="staff-report-table"><thead><tr><th scope="col">Route and trip</th><th scope="col" class="number">Booked seats</th><th scope="col" class="number">Captured</th><th scope="col" class="number">Refunded</th><th scope="col" class="number">Net</th></tr></thead><tbody>
+      {% for trip in trips %}<tr><th scope="row"><span class="route-name">{{ trip.origin }} → {{ trip.destination }}</span><small>Trip #{{ trip.trip_id }}</small></th><td class="number">{{ trip.booked_seats }}</td><td class="number">₹{{ trip.captured_amount|floatformat:2 }}</td><td class="number">₹{{ trip.refunded_amount|floatformat:2 }}</td><td class="number net-cell">₹{{ trip.net_amount|floatformat:2 }}</td></tr>
+      {% empty %}<tr><td colspan="5" class="empty-row">No trips with payments yet. Choose “Show all trips” to see the full fleet.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+  <p class="staff-note">All amounts are simulated. No real payment or refund is processed.</p>
+</div>
 {% endblock %}
