@@ -10,6 +10,9 @@ FIFO waiting-list offers, conditional uniqueness for active queue entries,
 an Oracle booking-status audit trail, and a Data Pump recovery exercise.
 Payments and refunds are simulated; no real money or bus service is involved.
 
+**Team manual (PDF):** [Download the illustrated user manual](docs/BusBook_Team_User_Manual.pdf)
+for starting the app offline or on a shared network and using its features.
+
 **New to this repository?** Follow the [complete installation and network
 guide](docs/setup_and_network.md). It covers a fresh computer, an offline
 demonstration, sharing on college Wi-Fi or a hotspot, and what public internet
