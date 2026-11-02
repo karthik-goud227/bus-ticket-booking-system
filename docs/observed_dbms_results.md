@@ -213,3 +213,13 @@ the correct three transitions but treated Oracle's empty old status as a
 mismatch; the verifier was corrected. A rerun passed: Oracle audited `HELD`,
 `CONFIRMED`, and `CANCELLED` in order, and the booking and audit test rows
 rolled back together.
+
+## Live booking audit and refund demonstration
+
+On 2 November 2026, a new passenger booking with reference `F69A3249DEC7`
+produced three Oracle audit rows in order: `NULL → HELD`, `HELD → CONFIRMED`,
+and `CONFIRMED → CANCELLED`. SQL Developer query 10 displayed all three
+events with timestamps. A read-only Oracle cross-check showed the booking
+status `CANCELLED`, simulated payment status `REFUNDED` for ₹699, zero seats
+still allocated to that booking, and exactly three audit events. This ties
+the trigger history to the application cancellation and refund flow.
