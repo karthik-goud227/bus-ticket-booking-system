@@ -232,3 +232,10 @@ validated. `verify_offer_rules` passed all three checks: a second live offer
 for one seat was rejected, incomplete `OFFERED` and invalid `WAITING` rows
 were rejected, and the seat could be offered to the next passenger after the
 first offer was cancelled. All temporary test rows were rolled back.
+
+After migration `0008` and the closed-trip offer guard, both existing
+waiting-list regression commands passed again. `verify_waitlist_fifo`
+confirmed first offer, expiry promotion, and second-passenger acceptance.
+`verify_waitlist_leave` confirmed FIFO positions, transfer of a declined
+offer, and the updated Oracle queue position. Both commands removed their
+temporary data.
