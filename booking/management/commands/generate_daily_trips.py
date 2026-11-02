@@ -36,15 +36,18 @@ class Command(BaseCommand):
                     departure_time=datetime.strptime(departure, "%H:%M").time(),
                     defaults={"duration_minutes": duration, "fare": fare},
                 )
-        created = skipped = 0
+        created = existing_count = conflicts = 0
         today = timezone.localdate()
         for schedule in RecurringTrip.objects.filter(is_active=True, bus__is_active=True).select_related("bus").order_by("bus_id", "departure_time"):
             for offset in range(1, days + 1):
                 departure = timezone.make_aware(datetime.combine(today + timedelta(days=offset), schedule.departure_time))
                 arrival = departure + timedelta(minutes=schedule.duration_minutes)
+                if Trip.objects.filter(bus=schedule.bus, departure_at=departure, schedule=schedule).exists():
+                    existing_count += 1
+                    continue
                 if Trip.objects.filter(bus=schedule.bus, is_cancelled=False,
                                        departure_at__lt=arrival, arrival_at__gt=departure).exists():
-                    skipped += 1
+                    conflicts += 1
                     continue
                 with transaction.atomic():
                     trip, added = Trip.objects.get_or_create(
@@ -55,4 +58,8 @@ class Command(BaseCommand):
                     if added:
                         TripSeat.objects.bulk_create([TripSeat(trip=trip, seat=seat) for seat in schedule.bus.seats.all()])
                         created += 1
-        self.stdout.write(self.style.SUCCESS(f"Created {created} trips; skipped {skipped} conflicting or existing slots."))
+                    else:
+                        existing_count += 1
+        self.stdout.write(self.style.SUCCESS(
+            f"Created {created} trips; {existing_count} already present; {conflicts} conflicting slots skipped."
+        ))
