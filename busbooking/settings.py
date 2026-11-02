@@ -7,8 +7,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-only-change-before-deployment")
 DEBUG = True
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-if os.environ.get("BUSBOOK_LAN_HOST"):
-    ALLOWED_HOSTS.append(os.environ["BUSBOOK_LAN_HOST"])
+ALLOWED_HOSTS.extend(
+    host.strip()
+    for host in os.environ.get("BUSBOOK_LAN_HOST", "").split(",")
+    if host.strip()
+)
 
 INSTALLED_APPS = [
     "django.contrib.admin",

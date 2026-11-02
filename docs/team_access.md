@@ -8,19 +8,18 @@ not need Oracle, Python, SQL Developer, or Git just to test the shared app.
 Keep the host laptop and the server PowerShell window running during testing.
 This is a local classroom demonstration, not public internet hosting.
 
-On the host laptop, open PowerShell in the project folder. Run `ipconfig` and
-find the **IPv4 Address** of the active Wi-Fi adapter (for example,
-`192.168.1.10`). In that same PowerShell window, run:
+On the host laptop, open PowerShell in the project folder and run:
 
 ```powershell
-$env:BUSBOOK_LAN_HOST = "192.168.1.10" # replace with your actual Wi-Fi IPv4 address
-$secure = Read-Host "BUSBOOKING password" -AsSecureString
-$env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $secure).Password
-.\.venv\Scripts\python.exe manage.py runserver 0.0.0.0:8000
+.\start_team.ps1
 ```
 
-Teammates visit `http://192.168.1.10:8000/`, replacing the example IP. The
-leader can continue using `http://127.0.0.1:8000/`. If Windows asks about
+The script asks for the database password and prints the current teammate
+link(s). Teammates join the same Wi-Fi or hotspot and open the matching link.
+The leader can continue using `http://127.0.0.1:8000/`. Switching between
+college Wi-Fi and a hotspot may change the link: stop the server with Ctrl+C,
+run `start_team.ps1` again, and share its new link. Internet can be available
+on the network, but is not required to run the booking app. If Windows asks about
 network access, allow the Python server on **Private networks** only. If the
 site cannot be reached on college Wi-Fi, try a shared phone hotspot: some
 networks prevent devices from connecting directly to one another. No router
