@@ -223,3 +223,12 @@ events with timestamps. A read-only Oracle cross-check showed the booking
 status `CANCELLED`, simulated payment status `REFUNDED` for ₹699, zero seats
 still allocated to that booking, and exactly three audit events. This ties
 the trigger history to the application cancellation and refund flow.
+
+## Active offer integrity
+
+Migration `booking.0008_waitlist_offer_rules` applied successfully. Oracle
+reported `CK_OFFER_COMPLETE` and `CK_WAITING_NO_OFFER` as enabled and
+validated. `verify_offer_rules` passed all three checks: a second live offer
+for one seat was rejected, incomplete `OFFERED` and invalid `WAITING` rows
+were rejected, and the seat could be offered to the next passenger after the
+first offer was cancelled. All temporary test rows were rolled back.
