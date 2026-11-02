@@ -75,7 +75,7 @@ prints the teammate link; restart it after changing Wi-Fi or hotspot.
    seats together, then add a future trip using that bus. The admin creates
    one `TripSeat` inventory row per bus seat for the new trip.
    To populate a varied schedule quickly, run `manage.py seed_fleet` with
-   `DB_PASSWORD` set: it adds four bus types and eight future trips without
+   `DB_PASSWORD` set: it defines 12 buses and 32 future trips without
    clearing existing bookings. A bus cannot have overlapping active trips;
    back-to-back trips and trips on other buses are allowed.
    See [fleet and schedule design](docs/fleet_schedule.md) for the Oracle rule

@@ -73,8 +73,8 @@ creates the project tables, indexes, constraints, Oracle triggers and views.
 You do not need to execute migration SQL manually. The database begins with
 no buses or trips; add your own in `/admin/`. Optional sample data can be
 created with `manage.py seed_demo` after setting `DB_PASSWORD`.
-For a broader example, `manage.py seed_fleet` creates four different bus
-types, their seats, and eight non-overlapping future trips. Run it once after
+For a broader example, `manage.py seed_fleet` defines 12 buses of varied
+types, their seats, and 32 non-overlapping future trips. Run it after
 `migrate`, or add buses and trips yourself in admin.
 The [fleet schedule guide](fleet_schedule.md) explains the non-overlap rule.
 

@@ -15,10 +15,16 @@ After setting `DB_PASSWORD` and applying migrations:
 .\.venv\Scripts\python.exe manage.py seed_fleet
 ```
 
-The command creates four separate demo registrations with AC Seater, AC
-Sleeper, Non-AC Seater and Mini Bus types. Each has two future trips, with
-different routes, fares, and seat counts. It uses `get_or_create`, so rerunning
+The command now defines 12 separate demo registrations and 32 future trips.
+The fleet includes AC and non-AC seaters, sleepers, mini buses, an electric
+seater, a tourist coach and a luxury coach. Routes cover cities in Andhra
+Pradesh, Telangana, Karnataka and Tamil Nadu. Operators and fares are sample
+data for the classroom demonstration, not real services or prices. Each bus
+has two or three trips with different routes, fares, and seat counts. It uses
+`get_or_create`, so rerunning
 it on the same date does not duplicate those trips or their seat inventory.
+If the original four buses and eight trips were already seeded, rerunning the
+updated command on the same day adds only eight buses and 24 trips.
 It does not delete existing buses, bookings, or passengers. On a later date,
 the relative future dates change and another set of future trips may be added;
 review the admin trip list before rerunning it then.

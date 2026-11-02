@@ -17,11 +17,43 @@ FLEET = (
      (("Kurnool", "Vijayawada", 7, 6, 649), ("Vijayawada", "Kurnool", 16, 6, 649))),
     ("DEMO-MINI-04", "Campus Connect", "Mini Bus", 12,
      (("Kurnool", "Nandyal", 9, 2, 199), ("Nandyal", "Kurnool", 13, 2, 199))),
+    ("DEMO-COACH-05", "Southern Trails", "Luxury Coach", 28,
+     (("Hyderabad", "Tirupati", 20, 11, 1499),
+      ("Tirupati", "Chennai", 10, 4, 599),
+      ("Chennai", "Hyderabad", 19, 12, 1599))),
+    ("DEMO-ELEC-06", "Green Mile", "Electric Seater", 18,
+     (("Kurnool", "Anantapur", 8, 4, 449),
+      ("Anantapur", "Bengaluru", 9, 5, 699),
+      ("Bengaluru", "Kurnool", 7, 9, 999))),
+    ("DEMO-SEMI-07", "Krishna Roadways", "Semi Sleeper", 22,
+     (("Vijayawada", "Guntur", 7, 2, 249),
+      ("Guntur", "Nellore", 9, 5, 649),
+      ("Nellore", "Vijayawada", 10, 6, 749))),
+    ("DEMO-TOUR-08", "Heritage Wheels", "Tourist Coach", 20,
+     (("Bengaluru", "Mysuru", 8, 4, 549),
+      ("Mysuru", "Chittoor", 9, 7, 899),
+      ("Chittoor", "Bengaluru", 11, 5, 749))),
+    ("DEMO-EXP-09", "Telangana Connect", "Express Seater", 24,
+     (("Hyderabad", "Warangal", 6, 4, 399),
+      ("Warangal", "Karimnagar", 8, 3, 299),
+      ("Karimnagar", "Hyderabad", 10, 4, 399))),
+    ("DEMO-SLP-10", "Rayalaseema Nights", "Non-AC Sleeper", 16,
+     (("Kurnool", "Kadapa", 21, 5, 649),
+      ("Kadapa", "Tirupati", 22, 5, 699),
+      ("Tirupati", "Kurnool", 20, 8, 899))),
+    ("DEMO-PREM-11", "Coastal Star", "Premium AC Sleeper", 20,
+     (("Vijayawada", "Visakhapatnam", 21, 8, 1199),
+      ("Visakhapatnam", "Rajahmundry", 9, 4, 549),
+      ("Rajahmundry", "Vijayawada", 10, 4, 499))),
+    ("DEMO-MINI-12", "District Hopper", "Mini Bus", 14,
+     (("Kurnool", "Adoni", 7, 3, 299),
+      ("Adoni", "Ballari", 8, 3, 349),
+      ("Ballari", "Kurnool", 10, 4, 449))),
 )
 
 
 class Command(BaseCommand):
-    help = "Create four demo bus types and eight future non-overlapping trips."
+    help = "Add a mixed demo fleet and future non-overlapping trips without clearing data."
 
     @transaction.atomic
     def handle(self, *args, **options):
