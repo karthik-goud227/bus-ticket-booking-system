@@ -11,11 +11,13 @@ This is a local classroom demonstration, not public internet hosting.
 On the host laptop, open PowerShell in the project folder and run:
 
 ```powershell
-.\start_team.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\start_team.ps1
 ```
 
 The script asks for the database password and prints the current teammate
 link(s). Teammates join the same Wi-Fi or hotspot and open the matching link.
+The command above works even when a direct `.\start_team.ps1` command is
+blocked by PowerShell's script execution policy.
 The leader can continue using `http://127.0.0.1:8000/`. Switching between
 college Wi-Fi and a hotspot may change the link: stop the server with Ctrl+C,
 run `start_team.ps1` again, and share its new link. Internet can be available

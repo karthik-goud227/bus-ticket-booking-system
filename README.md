@@ -10,6 +10,12 @@ FIFO waiting-list offers, conditional uniqueness for active queue entries,
 an Oracle booking-status audit trail, and a Data Pump recovery exercise.
 Payments and refunds are simulated; no real money or bus service is involved.
 
+**New to this repository?** Follow the [complete installation and network
+guide](docs/setup_and_network.md). It covers a fresh computer, an offline
+demonstration, sharing on college Wi-Fi or a hotspot, and what public internet
+hosting would require. For teammates using one shared installation, use the
+[team access guide](docs/team_access.md).
+
 ## Requirements
 
 - Windows with Oracle Database 21c XE and SQL Developer (or a compatible Oracle 21c installation).
