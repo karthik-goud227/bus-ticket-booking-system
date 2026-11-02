@@ -44,7 +44,7 @@ COMPOUND TRIGGER
             END IF;
         END LOOP;
     END AFTER STATEMENT;
-END trg_trip_no_overlap
+END trg_trip_no_overlap;
 """
 
 

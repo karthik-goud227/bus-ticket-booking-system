@@ -47,6 +47,11 @@ checks the trip table after the statement. This protects direct SQL writes
 and serializes concurrent schedule changes for one bus. The existing
 `CK_TRIP_TIMES` constraint separately requires arrival after departure.
 
+Migration `0010_recompile_trip_schedule_guard.py` repairs the final statement
+terminator missing from the first `0009` trigger definition. Existing
+installations should apply `0010`; fresh installations run both migrations
+in order.
+
 Run the rollback-only database probe:
 
 ```powershell
