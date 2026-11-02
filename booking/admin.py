@@ -1,6 +1,64 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.db.models import Count
 
 from .models import Booking, BookingStatusEvent, Bus, Payment, Seat, Trip, TripSeat, WaitlistEntry
+
+admin.site.site_header = "BusBook administration"
+admin.site.site_title = "BusBook admin"
+admin.site.index_title = "Fleet, passengers and booking activity"
+
+
+class PassengerBookingInline(admin.TabularInline):
+    model = Booking
+    extra = 0
+    can_delete = False
+    fields = ("reference", "trip", "status", "total_fare", "created_at")
+    readonly_fields = fields
+    show_change_link = True
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+class PassengerWaitlistInline(admin.TabularInline):
+    model = WaitlistEntry
+    extra = 0
+    can_delete = False
+    fields = ("trip", "status", "joined_at", "offer_expires_at")
+    readonly_fields = fields
+    show_change_link = True
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+User = get_user_model()
+admin.site.unregister(User)
+
+
+@admin.register(User)
+class PassengerAdmin(DjangoUserAdmin):
+    list_display = ("username", "email", "is_staff", "booking_count", "queue_count", "date_joined")
+    list_filter = ("is_staff", "is_active", "date_joined")
+    search_fields = ("username", "email", "first_name", "last_name")
+    ordering = ("-date_joined",)
+    inlines = (PassengerBookingInline, PassengerWaitlistInline)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            _booking_count=Count("bookings", distinct=True),
+            _queue_count=Count("waitlist_entries", distinct=True),
+        )
+
+    @admin.display(description="Bookings", ordering="_booking_count")
+    def booking_count(self, obj):
+        return obj._booking_count
+
+    @admin.display(description="Queue entries", ordering="_queue_count")
+    def queue_count(self, obj):
+        return obj._queue_count
 
 
 class SeatInline(admin.TabularInline):
@@ -67,17 +125,43 @@ class BookingStatusEventInline(admin.TabularInline):
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = ("reference", "user", "trip", "status", "total_fare", "created_at")
-    list_filter = ("status",)
+    list_filter = ("status", "trip__departure_at")
+    search_fields = ("reference", "user__username", "trip__origin", "trip__destination")
+    readonly_fields = ("reference", "user", "trip", "status", "total_fare", "created_at", "hold_expires_at", "confirmed_at", "cancelled_at")
+    list_select_related = ("user", "trip")
     inlines = (BookingStatusEventInline,)
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(WaitlistEntry)
 class WaitlistEntryAdmin(admin.ModelAdmin):
     list_display = ("trip", "user", "status", "joined_at", "offer_expires_at")
     list_filter = ("status",)
+    search_fields = ("user__username", "trip__origin", "trip__destination")
+    list_select_related = ("trip", "user")
 
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ("booking", "amount", "status", "captured_at", "refunded_at")
     list_filter = ("status",)
+    search_fields = ("booking__reference", "booking__user__username")
+    readonly_fields = ("booking", "amount", "status", "captured_at", "refunded_at")
+    list_select_related = ("booking",)
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(BookingStatusEvent)
+class BookingStatusEventAdmin(admin.ModelAdmin):
+    list_display = ("booking", "old_status", "new_status", "changed_at")
+    list_filter = ("new_status",)
+    search_fields = ("booking__reference", "booking__user__username")
+    readonly_fields = ("booking", "old_status", "new_status", "changed_at")
+    list_select_related = ("booking",)
+
+    def has_add_permission(self, request):
+        return False

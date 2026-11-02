@@ -1,0 +1,19 @@
+:root {
+  --primary: #12334f;
+  --secondary: #176587;
+  --accent: #0e9d8d;
+  --link-fg: #176587;
+  --link-hover-color: #0e9d8d;
+  --header-bg: #12334f;
+  --header-color: #fff;
+  --breadcrumbs-bg: #176587;
+}
+
+.busbook-admin-brand { display: flex; align-items: center; gap: 12px; color: white; font-size: 21px; font-weight: 700; }
+.busbook-admin-brand img { width: 42px; height: 42px; object-fit: contain; background: white; border-radius: 50%; padding: 2px; }
+.busbook-admin-brand small { display: block; font-size: 12px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; }
+#header { min-height: 56px; }
+.module { border-radius: 8px; overflow: hidden; }
+.module h2, .module caption, .inline-group h2 { background: var(--secondary); }
+.object-tools a, input[type=submit], .button { border-radius: 5px; }
+.results { overflow-x: auto; }

@@ -1,0 +1,16 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | BusBook admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'booking/admin.css' %}">
+{% endblock %}
+
+{% block branding %}
+<div class="busbook-admin-brand">
+  <img src="{% static 'booking/iiitdm-kurnool-logo.jpg' %}" alt="IIITDM Kurnool logo">
+  <span>BusBook <small>Administration</small></span>
+</div>
+{% endblock %}
