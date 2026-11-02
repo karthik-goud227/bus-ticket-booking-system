@@ -30,9 +30,15 @@ body { min-height:100vh; background:#f3f7fb; color:var(--ink); font-family:Inter
 .legend-dot.unavailable { background:#d7e0e8; }
 .bus-frame { max-width:380px; margin:auto; padding:22px 25px 30px; background:#f7fafc; border:2px solid #cddde7; border-radius:36px 36px 20px 20px; }
 .bus-front { display:flex; justify-content:space-between; align-items:center; padding-bottom:14px; margin-bottom:18px; border-bottom:2px dashed #d8e3ec; color:#7c91a3; font-size:.68rem; font-weight:750; letter-spacing:.12em; }
-.bus-front span:last-child { font-size:1.5rem; color:#53718b; }
+.steering-icon { width:34px; height:34px; fill:none; stroke:#426e8b; stroke-width:3; stroke-linecap:round; }
+.deck-stack { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr)); gap:22px; align-items:start; }
+.deck-panel h3 { margin:0 0 12px; text-align:center; font-size:1rem; color:#234860; }
+.bus-door { display:flex; align-items:center; gap:8px; margin:-5px 0 15px auto; width:max-content; color:#b83248; font-size:.7rem; letter-spacing:.13em; }
+.door-shape { display:block; width:23px; height:30px; border:3px solid #c73e55; border-radius:4px 4px 0 0; background:#fff3f4; position:relative; }
+.door-shape::after { content:""; position:absolute; right:3px; top:12px; width:3px; height:3px; border-radius:50%; background:#c73e55; }
 .seat-rows { display:grid; gap:13px; }
 .seat-row { display:grid; grid-template-columns:repeat(2,minmax(50px,1fr)) 28px repeat(2,minmax(50px,1fr)); gap:8px; align-items:center; }
+.layout-3 .seat-row { grid-template-columns:minmax(50px,1fr) 28px repeat(2,minmax(50px,1fr)); }
 .aisle { grid-column:3; }
 .seat-check { position:absolute; width:1px; height:1px; opacity:0; }
 .seat-tile { position:relative; display:grid; place-items:center; min-height:66px; border:0; background:transparent; color:#8f2e50; font-weight:800; cursor:pointer; transition:transform .15s,color .15s; }
@@ -42,6 +48,8 @@ body { min-height:100vh; background:#f3f7fb; color:var(--ink); font-family:Inter
 .chair-base { fill:#fbd1dd; stroke:#c94f72; stroke-width:3; }
 .chair-detail { fill:none; stroke:#df8fa8; stroke-width:2; }
 .seat-number { position:absolute; top:17px; left:50%; transform:translateX(-50%); font-size:.9rem; line-height:1; }
+.bed-tile .seat-number { top:32px; }
+.bed-icon { width:56px; height:66px; }
 .seat-check:checked + .seat-tile { color:white; }
 .seat-check:checked + .seat-tile .chair-back { fill:#07927c; stroke:#057561; }
 .seat-check:checked + .seat-tile .chair-base { fill:#057561; stroke:#057561; }
@@ -78,6 +86,9 @@ body { min-height:100vh; background:#f3f7fb; color:var(--ink); font-family:Inter
 .route-line span { position:relative; top:-12px; padding:0 8px; background:white; color:#7996a9; font-size:.65rem; letter-spacing:.1em; font-weight:800; }
 .ticket-rule { height:1px; margin:30px 0; border-top:2px dashed #d9e5ec; }
 .ticket-details { display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:18px; }
+.ticket-passenger { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; margin-top:28px; padding-top:20px; border-top:1px solid #dce8ee; }
+.ticket-passenger small { display:block; color:#74899a; font-size:.69rem; letter-spacing:.12em; font-weight:800; }
+.ticket-passenger strong { display:block; margin-top:7px; overflow-wrap:anywhere; }
 .ticket-details strong { display:block; margin-top:8px; font-size:1.2rem; }
 .reference-code { letter-spacing:.08em; font-family:ui-monospace,Consolas,monospace; }
 .ticket-seats { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
@@ -88,6 +99,7 @@ body { min-height:100vh; background:#f3f7fb; color:var(--ink); font-family:Inter
 .cancel-action { max-width:920px; margin-left:auto; margin-right:auto; }
 @media (max-width:700px) { .trip-banner { padding:24px; align-items:start; flex-direction:column; } .fare-block { text-align:left; } .navbar .container { gap:10px; } .navbar .d-flex { flex-wrap:wrap; gap:8px!important; } .bus-frame { padding:18px; } }
 @media (max-width:700px) { .ticket-header,.ticket-body { padding:24px; } .ticket-route { gap:8px; } .ticket-route strong { font-size:1.2rem; } .ticket-details { grid-template-columns:1fr 1fr; } .ticket-footer { padding:14px 24px; } }
+@media (max-width:700px) { .ticket-passenger { grid-template-columns:1fr 1fr; } }
 @media print { .navbar,.site-footer,.btn,.back-link,.ticket-actions,.cancel-action { display:none!important; } body { background:white; } .card,.ticket-card { box-shadow:none; } .ticket-card { border:1px solid #c8d6df; } .ticket-header { background:white!important; color:#102d4d!important; border-bottom:2px solid #d7e4eb; } .ticket-header p { color:#4d6578!important; } .ticket-header .eyebrow { color:#315d78!important; } .ticket-status { color:#126044!important; border:1px solid #a9d5bf; background:white!important; } .ticket-note.success { color:#125941; background:white!important; border:1px solid #c1ddcf; } }
 
 /* Lively, consistent application surfaces. */

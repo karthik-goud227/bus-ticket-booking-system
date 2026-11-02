@@ -76,6 +76,13 @@ def _offer_next(trip_id, available_seats, now):
         next_entry.save(update_fields=["status", "offered_seat", "offer_expires_at"])
 
 
+def _offer_all_waiting(trip_id, now):
+    """Preserve FIFO priority when new trip seats are added to an existing bus."""
+    if WaitlistEntry.objects.filter(trip_id=trip_id, status=WaitlistEntry.Status.WAITING).exists():
+        available = TripSeat.objects.filter(trip_id=trip_id, status=TripSeat.Status.AVAILABLE).order_by("id")
+        _offer_next(trip_id, available, now)
+
+
 @transaction.atomic
 def refresh_trip(trip_id):
     """Expire stale state and promote waiting passengers on every seat-map visit."""
@@ -84,21 +91,23 @@ def refresh_trip(trip_id):
     released = _release_expired(trip_id, now)
     released.extend(_expire_offers(trip_id, now))
     _offer_next(trip_id, released, now)
+    _offer_all_waiting(trip_id, now)
 
 
 @transaction.atomic
-def hold_seats(*, user, trip, seat_ids, waitlist_entry=None):
+def hold_seats(*, user, trip, seat_ids, waitlist_entry=None, passenger_name="", passenger_phone=""):
     """Lock selected inventory rows and claim all requested seats or none."""
     now = timezone.now()
     ids = sorted(set(int(value) for value in seat_ids))
-    if not ids or len(ids) > 6:
-        raise BookingConflict("Choose between one and six seats.")
+    if not ids:
+        raise BookingConflict("Choose at least one seat.")
     trip = Trip.objects.select_for_update().get(id=trip.id)
     if trip.is_cancelled or not trip.bus.is_active or trip.departure_at <= now:
         raise BookingConflict("This trip is no longer open for booking.")
     released = _release_expired(trip.id, now)
     released.extend(_expire_offers(trip.id, now))
     _offer_next(trip.id, released, now)
+    _offer_all_waiting(trip.id, now)
     seats = list(
         TripSeat.objects.select_for_update()
         .filter(trip=trip, id__in=ids).order_by("id")
@@ -124,6 +133,8 @@ def hold_seats(*, user, trip, seat_ids, waitlist_entry=None):
     booking = Booking.objects.create(
         reference=uuid4().hex[:12].upper(), user=user, trip=trip,
         total_fare=trip.fare * len(seats), hold_expires_at=deadline,
+        passenger_name=passenger_name or user.get_full_name() or user.username,
+        passenger_phone=passenger_phone,
     )
     for seat in seats:
         seat.status = TripSeat.Status.HELD

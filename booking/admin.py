@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.db.models import Count
 
-from .models import Booking, BookingStatusEvent, Bus, LoginEvent, Payment, Seat, Trip, TripSeat, WaitlistEntry
+from .models import Booking, BookingStatusEvent, Bus, LoginEvent, Payment, RecurringTrip, Seat, Trip, TripSeat, WaitlistEntry
 
 admin.site.site_header = "BusBook administration"
 admin.site.site_title = "BusBook admin"
@@ -68,7 +68,7 @@ class SeatInline(admin.TabularInline):
 
 @admin.register(Bus)
 class BusAdmin(admin.ModelAdmin):
-    list_display = ("registration_number", "operator_name", "bus_type", "is_active")
+    list_display = ("registration_number", "operator_name", "bus_type", "seats_per_row", "has_upper_deck", "is_active")
     search_fields = ("registration_number", "operator_name")
     list_filter = ("bus_type", "is_active")
     inlines = (SeatInline,)
@@ -76,13 +76,13 @@ class BusAdmin(admin.ModelAdmin):
 
 @admin.register(Seat)
 class SeatAdmin(admin.ModelAdmin):
-    list_display = ("number", "bus", "seat_type")
-    list_filter = ("bus",)
+    list_display = ("number", "bus", "deck", "seat_type")
+    list_filter = ("bus", "deck", "seat_type")
 
 
 @admin.register(Trip)
 class TripAdmin(admin.ModelAdmin):
-    list_display = ("origin", "destination", "departure_at", "arrival_at", "bus", "fare", "is_cancelled")
+    list_display = ("origin", "destination", "departure_at", "arrival_at", "bus", "schedule", "fare", "is_cancelled")
     list_filter = ("is_cancelled", "departure_at", "bus__bus_type")
     search_fields = ("origin", "destination", "bus__registration_number", "bus__operator_name")
     actions = ("sync_seat_inventory",)
@@ -106,6 +106,13 @@ class TripAdmin(admin.ModelAdmin):
         self.message_user(request, f"Added {count} missing trip seats.")
 
 
+@admin.register(RecurringTrip)
+class RecurringTripAdmin(admin.ModelAdmin):
+    list_display = ("bus", "origin", "destination", "departure_time", "duration_minutes", "fare", "is_active")
+    list_filter = ("is_active", "bus")
+    search_fields = ("origin", "destination", "bus__registration_number")
+
+
 @admin.register(TripSeat)
 class TripSeatAdmin(admin.ModelAdmin):
     list_display = ("trip", "seat", "status", "booking")
@@ -124,10 +131,10 @@ class BookingStatusEventInline(admin.TabularInline):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ("reference", "user", "trip", "status", "total_fare", "created_at")
+    list_display = ("reference", "user", "passenger_name", "passenger_phone", "trip", "status", "total_fare", "created_at")
     list_filter = ("status", "trip__departure_at")
     search_fields = ("reference", "user__username", "trip__origin", "trip__destination")
-    readonly_fields = ("reference", "user", "trip", "status", "total_fare", "created_at", "hold_expires_at", "confirmed_at", "cancelled_at")
+    readonly_fields = ("reference", "user", "passenger_name", "passenger_phone", "trip", "status", "total_fare", "created_at", "hold_expires_at", "confirmed_at", "cancelled_at")
     list_select_related = ("user", "trip")
     inlines = (BookingStatusEventInline,)
 

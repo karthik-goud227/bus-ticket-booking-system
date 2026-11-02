@@ -83,13 +83,23 @@ prints the teammate link; restart it after changing Wi-Fi or hotspot.
    seats together, then add a future trip using that bus. The admin creates
    one `TripSeat` inventory row per bus seat for the new trip.
    To populate a varied schedule quickly, run `manage.py seed_fleet` with
-   `DB_PASSWORD` set: it defines 12 buses and 32 future trips without
-   clearing existing bookings. A bus cannot have overlapping active trips;
+   `DB_PASSWORD` set: it defines 12 buses and future trips without
+   clearing existing bookings. Run `manage.py upgrade_fleet` to expand **all**
+   buses already in the database to at least 24 seats and add the missing
+   trip-seat inventory rows. Existing booked seats and booking references stay
+   intact. Run `manage.py generate_daily_trips --days 14` to create a rolling
+   two-week window from daily route templates; repeat it as needed. Duplicate
+   or overlapping bus time slots are skipped. Admin can edit daily templates
+   under **Recurring trips**. A bus cannot have overlapping active trips;
    back-to-back trips and trips on other buses are allowed.
    See [fleet and schedule design](docs/fleet_schedule.md) for the Oracle rule
-   and a SQL Developer query.
-2. Open `/` and create a passenger account. Search for the trip, select up to
-   six seats, and hold them for 10 minutes. The search uses database-backed
+   and a SQL Developer query. The [layout and daily trip guide](docs/fleet_layout_and_daily_trips.md)
+   explains the upgrade and verification commands. `start_team.ps1` refreshes
+   the next 14 days of daily trips when launched.
+2. Open `/` and create a passenger account. Search for the trip, select the
+   seats you need, enter passenger name and contact phone, and hold them for
+   10 minutes. The ticket shows those details, journey date, approximate
+   arrival time, and each seat's deck and berth type. The search uses database-backed
    origin, destination, bus-type, and operator menus; changing the origin
    narrows the destination choices. Filter by travel date or bookable seats,
    then sort by departure or fare. Simulate payment to confirm.

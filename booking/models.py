@@ -10,6 +10,8 @@ class Bus(models.Model):
     operator_name = models.CharField(max_length=100)
     bus_type = models.CharField(max_length=50)
     is_active = models.BooleanField(default=True)
+    seats_per_row = models.PositiveSmallIntegerField(default=4, choices=[(3, "Three seats"), (4, "Four seats")])
+    has_upper_deck = models.BooleanField(default=False)
 
     def __str__(self):
         return self.registration_number
@@ -19,6 +21,7 @@ class Seat(models.Model):
     bus = models.ForeignKey(Bus, on_delete=models.CASCADE, related_name="seats")
     number = models.CharField(max_length=8)
     seat_type = models.CharField(max_length=20, default="STANDARD")
+    deck = models.CharField(max_length=5, default="LOWER", choices=[("LOWER", "Lower"), ("UPPER", "Upper")])
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["bus", "number"], name="uq_seat_bus_number")]
@@ -35,6 +38,7 @@ class Trip(models.Model):
     arrival_at = models.DateTimeField()
     fare = models.DecimalField(max_digits=10, decimal_places=2)
     is_cancelled = models.BooleanField(default=False)
+    schedule = models.ForeignKey("RecurringTrip", on_delete=models.SET_NULL, null=True, blank=True, related_name="generated_trips")
 
     class Meta:
         indexes = [models.Index(fields=["origin", "destination", "departure_at"], name="idx_trip_search")]
@@ -46,6 +50,12 @@ class Trip(models.Model):
 
     def __str__(self):
         return f"{self.origin} → {self.destination} ({self.departure_at:%Y-%m-%d %H:%M})"
+
+    @property
+    def duration_label(self):
+        minutes = int((self.arrival_at - self.departure_at).total_seconds() // 60)
+        hours, remainder = divmod(minutes, 60)
+        return f"{hours} hr {remainder} min" if remainder else f"{hours} hr"
 
     def clean(self):
         super().clean()
@@ -61,6 +71,28 @@ class Trip(models.Model):
             overlap = overlap.exclude(pk=self.pk)
         if overlap.exists():
             raise ValidationError({"bus": "This bus already has a trip during that time."})
+
+
+class RecurringTrip(models.Model):
+    """Daily template; generated Trip rows retain their own seat inventory and booking history."""
+    bus = models.ForeignKey(Bus, on_delete=models.PROTECT, related_name="daily_schedules")
+    origin = models.CharField(max_length=100)
+    destination = models.CharField(max_length=100)
+    departure_time = models.TimeField()
+    duration_minutes = models.PositiveIntegerField()
+    fare = models.DecimalField(max_digits=10, decimal_places=2)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["bus", "departure_time"], name="uq_daily_bus_time"),
+            models.CheckConstraint(condition=Q(duration_minutes__gt=0), name="ck_daily_duration"),
+            models.CheckConstraint(condition=Q(fare__gte=0), name="ck_daily_fare"),
+            models.CheckConstraint(condition=~Q(origin=models.F("destination")), name="ck_daily_route"),
+        ]
+
+    def __str__(self):
+        return f"Daily {self.origin} → {self.destination} at {self.departure_time:%H:%M}"
 
 
 class Booking(models.Model):
@@ -79,6 +111,8 @@ class Booking(models.Model):
     hold_expires_at = models.DateTimeField(null=True, blank=True)
     confirmed_at = models.DateTimeField(null=True, blank=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
+    passenger_name = models.CharField(max_length=100, blank=True)
+    passenger_phone = models.CharField(max_length=20, blank=True)
 
     class Meta:
         indexes = [models.Index(fields=["user", "created_at"], name="idx_booking_user_created")]

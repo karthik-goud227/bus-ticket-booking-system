@@ -18,6 +18,16 @@ from .models import Booking, Bus, Payment, Seat, Trip, TripSeat, WaitlistEntry
 from .services import BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, leave_waitlist, refresh_trip
 
 
+def passenger_details(post):
+    name = post.get("passenger_name", "").strip()
+    phone = post.get("passenger_phone", "").strip()
+    if not 2 <= len(name) <= 100:
+        raise BookingConflict("Enter the passenger's full name (at least 2 characters).")
+    if not re.fullmatch(r"[+()\d\s-]+", phone) or not 10 <= len(re.sub(r"\D", "", phone)) <= 15:
+        raise BookingConflict("Enter a valid contact phone number (10 to 15 digits).")
+    return name, phone
+
+
 @staff_member_required
 def staff_overview(request):
     """Operational counts from the project's Oracle-backed tables."""
@@ -210,8 +220,14 @@ def trip_detail(request, trip_id):
     for seat in seats:
         seat.can_select = trip_open and seat.status == TripSeat.Status.AVAILABLE and seat.id not in offered_ids
     available_count = sum(seat.can_select for seat in seats)
+    decks = []
+    for key, title in (("LOWER", "Lower deck"), ("UPPER", "Upper deck")):
+        deck_seats = [seat for seat in seats if seat.seat.deck == key]
+        if deck_seats:
+            width = trip.bus.seats_per_row
+            decks.append({"title": title, "rows": [deck_seats[i:i + width] for i in range(0, len(deck_seats), width)]})
     return render(request, "booking/trip.html", {
-        "trip": trip, "seat_rows": [seats[i:i + 4] for i in range(0, len(seats), 4)],
+        "trip": trip, "decks": decks,
         "available_count": available_count, "trip_open": trip_open,
     })
 
@@ -221,7 +237,9 @@ def trip_detail(request, trip_id):
 def create_hold(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id)
     try:
-        booking = hold_seats(user=request.user, trip=trip, seat_ids=request.POST.getlist("seats"))
+        name, phone = passenger_details(request.POST)
+        booking = hold_seats(user=request.user, trip=trip, seat_ids=request.POST.getlist("seats"),
+                             passenger_name=name, passenger_phone=phone)
         return redirect("booking_detail", booking_id=booking.id)
     except (BookingConflict, ValueError) as error:
         messages.error(request, str(error))
@@ -257,8 +275,10 @@ def waitlist_leave(request, entry_id):
 def accept_offer(request, entry_id):
     entry = get_object_or_404(WaitlistEntry.objects.select_related("trip"), id=entry_id, user=request.user)
     try:
+        name, phone = passenger_details(request.POST)
         booking = hold_seats(
             user=request.user, trip=entry.trip, seat_ids=[entry.offered_seat_id], waitlist_entry=entry,
+            passenger_name=name, passenger_phone=phone,
         )
         return redirect("booking_detail", booking_id=booking.id)
     except (BookingConflict, ValueError, TypeError) as error:
@@ -302,7 +322,11 @@ def booking_detail(request, booking_id):
     if booking.status == Booking.Status.HELD and booking.hold_expires_at <= timezone.now():
         refresh_trip(booking.trip_id)
         booking.refresh_from_db()
-    seats = booking.allocated_seats.select_related("seat").order_by("seat__number")
+    seats = list(booking.allocated_seats.select_related("seat"))
+    seats.sort(key=lambda inventory: [
+        (0, int(part)) if part.isdigit() else (1, part.lower())
+        for part in re.split(r"(\d+)", inventory.seat.number)
+    ])
     payment = Payment.objects.filter(booking=booking).first()
     return render(request, "booking/booking_detail.html", {
         "booking": booking, "seats": seats, "payment": payment,
