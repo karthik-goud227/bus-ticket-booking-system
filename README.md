@@ -89,8 +89,10 @@ prints the teammate link; restart it after changing Wi-Fi or hotspot.
    See [fleet and schedule design](docs/fleet_schedule.md) for the Oracle rule
    and a SQL Developer query.
 2. Open `/` and create a passenger account. Search for the trip, select up to
-   six seats, and hold them for 10 minutes. Search can sort by departure or
-   fare and show only trips with bookable seats. Simulate payment to confirm.
+   six seats, and hold them for 10 minutes. The search uses database-backed
+   origin, destination, bus-type, and operator menus; changing the origin
+   narrows the destination choices. Filter by travel date or bookable seats,
+   then sort by departure or fare. Simulate payment to confirm.
 3. View the booking under **My bookings**. A confirmed ticket can be printed.
    Whole-booking cancellation releases its seats and records a simulated full
    refund. The booking detail page shows the lifecycle timestamps and the

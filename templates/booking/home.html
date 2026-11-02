@@ -18,12 +18,16 @@
 <section class="search-panel card mb-4" id="find-trip" aria-labelledby="search-heading">
   <div class="section-heading"><div><span class="eyebrow text-primary">PLAN YOUR TRIP</span><h2 id="search-heading">Where are you headed?</h2></div><span class="section-note">Search available journeys</span></div>
   <form method="get" class="row g-3 align-items-end">
-    <div class="col-md-4"><label for="origin" class="form-label">From</label><input id="origin" name="origin" class="form-control" value="{{ origin }}" placeholder="Origin city" autocomplete="address-level2"></div>
-    <div class="col-md-4"><label for="destination" class="form-label">To</label><input id="destination" name="destination" class="form-control" value="{{ destination }}" placeholder="Destination city" autocomplete="address-level2"></div>
-    <div class="col-md-2"><label for="travel-date" class="form-label">Travel date</label><input id="travel-date" name="date" type="date" class="form-control" value="{{ date }}"></div>
-    <div class="col-md-2"><button class="btn btn-primary w-100">Find buses <span aria-hidden="true">→</span></button></div>
-    <div class="col-md-12 search-options"><label for="trip-sort">Sort by <select id="trip-sort" name="sort" class="form-control"><option value="departure" {% if sort == 'departure' %}selected{% endif %}>Earliest departure</option><option value="fare_low" {% if sort == 'fare_low' %}selected{% endif %}>Lowest fare</option><option value="fare_high" {% if sort == 'fare_high' %}selected{% endif %}>Highest fare</option></select></label><label class="availability-toggle"><input type="checkbox" name="available" value="1" {% if only_available %}checked{% endif %}> Seats available only</label><a class="clear-search" href="{% url 'home' %}#find-trip">Clear filters</a></div>
+    <div class="col-md-3"><label for="origin" class="form-label">From</label><select id="origin" name="origin" class="form-control"><option value="">Any origin</option>{% for city in origins %}<option value="{{ city }}" {% if origin == city %}selected{% endif %}>{{ city }}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><label for="destination" class="form-label">To</label><select id="destination" name="destination" class="form-control"><option value="">Any destination</option>{% for city in destinations %}<option value="{{ city }}" {% if destination == city %}selected{% endif %}>{{ city }}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><label for="travel-date" class="form-label">Travel date</label><input id="travel-date" name="date" type="date" min="{{ today }}" class="form-control" value="{{ date }}"></div>
+    <div class="col-md-3"><label for="bus-type" class="form-label">Bus type</label><select id="bus-type" name="bus_type" class="form-control"><option value="">Any type</option>{% for type in bus_types %}<option value="{{ type }}" {% if bus_type == type %}selected{% endif %}>{{ type }}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><label for="operator" class="form-label">Operator</label><select id="operator" name="operator" class="form-control"><option value="">Any operator</option>{% for name in operators %}<option value="{{ name }}" {% if operator == name %}selected{% endif %}>{{ name }}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><label for="trip-sort" class="form-label">Sort by</label><select id="trip-sort" name="sort" class="form-control"><option value="departure" {% if sort == 'departure' %}selected{% endif %}>Earliest departure</option><option value="fare_low" {% if sort == 'fare_low' %}selected{% endif %}>Lowest fare</option><option value="fare_high" {% if sort == 'fare_high' %}selected{% endif %}>Highest fare</option></select></div>
+    <div class="col-md-3 search-availability"><label class="availability-toggle"><input type="checkbox" name="available" value="1" {% if only_available %}checked{% endif %}> Seats available only</label></div>
+    <div class="col-md-3 search-actions"><button class="btn btn-primary">Find buses <span aria-hidden="true">→</span></button><a class="clear-search" href="{% url 'home' %}#find-trip">Clear</a></div>
   </form>
+  {{ route_pairs|json_script:"available-routes" }}
 </section>
 <section class="trip-results" aria-labelledby="trips-heading">
   <div class="section-heading"><div><span class="eyebrow text-primary">AVAILABLE ROUTES</span><h2 id="trips-heading">Trips ready for you</h2></div></div>
@@ -32,4 +36,5 @@
   {% empty %}<div class="card empty-state"><span class="empty-icon" aria-hidden="true">⌕</span><h3>No trips found</h3><p>Try another route or date. An admin can add more journeys.</p></div>{% endfor %}
 </section>
 <section class="confidence-strip" aria-label="Booking features"><div><span aria-hidden="true">◉</span><strong>Pick your seat</strong><small>See availability before booking</small></div><div><span aria-hidden="true">↺</span><strong>Flexible plans</strong><small>Cancellation and waiting list</small></div><div><span aria-hidden="true">✓</span><strong>Clear booking</strong><small>Keep your journey details together</small></div></section>
+<script src="{% static 'booking/search.js' %}?v=1" defer></script>
 {% endblock %}

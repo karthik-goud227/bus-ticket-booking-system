@@ -115,9 +115,16 @@ def home(request):
     trips = Trip.objects.select_related("bus").filter(
         is_cancelled=False, bus__is_active=True, departure_at__gt=now
     )
+    route_pairs = list(trips.order_by("origin", "destination").values_list("origin", "destination").distinct())
+    origins = sorted({origin for origin, _ in route_pairs})
     origin = request.GET.get("origin", "").strip()
     destination = request.GET.get("destination", "").strip()
     date = request.GET.get("date", "").strip()
+    bus_type = request.GET.get("bus_type", "").strip()
+    operator = request.GET.get("operator", "").strip()
+    destinations = sorted({arrival for departure, arrival in route_pairs if not origin or departure == origin})
+    bus_types = list(trips.order_by("bus__bus_type").values_list("bus__bus_type", flat=True).distinct())
+    operators = list(trips.order_by("bus__operator_name").values_list("bus__operator_name", flat=True).distinct())
     sort = request.GET.get("sort", "departure")
     sort_fields = {
         "departure": ("departure_at", "id"),
@@ -128,9 +135,13 @@ def home(request):
         sort = "departure"
     only_available = request.GET.get("available") == "1"
     if origin:
-        trips = trips.filter(origin__icontains=origin)
+        trips = trips.filter(origin=origin)
     if destination:
-        trips = trips.filter(destination__icontains=destination)
+        trips = trips.filter(destination=destination)
+    if bus_type:
+        trips = trips.filter(bus__bus_type=bus_type)
+    if operator:
+        trips = trips.filter(bus__operator_name=operator)
     if date:
         try:
             chosen = datetime.strptime(date, "%Y-%m-%d").date()
@@ -168,6 +179,9 @@ def home(request):
     return render(request, "booking/home.html", {
         "trips": trip_list, "origin": origin, "destination": destination, "date": date,
         "sort": sort, "only_available": only_available,
+        "origins": origins, "destinations": destinations, "route_pairs": route_pairs,
+        "bus_types": bus_types, "operators": operators, "bus_type": bus_type, "operator": operator,
+        "today": timezone.localdate().isoformat(),
     })
 
 
