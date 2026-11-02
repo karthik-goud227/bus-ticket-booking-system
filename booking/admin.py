@@ -12,6 +12,7 @@ class SeatInline(admin.TabularInline):
 class BusAdmin(admin.ModelAdmin):
     list_display = ("registration_number", "operator_name", "bus_type", "is_active")
     search_fields = ("registration_number", "operator_name")
+    list_filter = ("bus_type", "is_active")
     inlines = (SeatInline,)
 
 
@@ -23,8 +24,9 @@ class SeatAdmin(admin.ModelAdmin):
 
 @admin.register(Trip)
 class TripAdmin(admin.ModelAdmin):
-    list_display = ("origin", "destination", "departure_at", "bus", "fare", "is_cancelled")
-    list_filter = ("is_cancelled", "departure_at")
+    list_display = ("origin", "destination", "departure_at", "arrival_at", "bus", "fare", "is_cancelled")
+    list_filter = ("is_cancelled", "departure_at", "bus__bus_type")
+    search_fields = ("origin", "destination", "bus__registration_number", "bus__operator_name")
     actions = ("sync_seat_inventory",)
 
     def get_readonly_fields(self, request, obj=None):

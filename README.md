@@ -74,6 +74,12 @@ prints the teammate link; restart it after changing Wi-Fi or hotspot.
 1. Sign in to `/admin/` with the Django superuser. Add a bus and its physical
    seats together, then add a future trip using that bus. The admin creates
    one `TripSeat` inventory row per bus seat for the new trip.
+   To populate a varied schedule quickly, run `manage.py seed_fleet` with
+   `DB_PASSWORD` set: it adds four bus types and eight future trips without
+   clearing existing bookings. A bus cannot have overlapping active trips;
+   back-to-back trips and trips on other buses are allowed.
+   See [fleet and schedule design](docs/fleet_schedule.md) for the Oracle rule
+   and a SQL Developer query.
 2. Open `/` and create a passenger account. Search for the trip, select up to
    six seats, and hold them for 10 minutes. Search can sort by departure or
    fare and show only trips with bookable seats. Simulate payment to confirm.
@@ -109,6 +115,7 @@ and remove them when finished:
 .\.venv\Scripts\python.exe manage.py verify_active_waitlist
 .\.venv\Scripts\python.exe manage.py verify_booking_audit
 .\.venv\Scripts\python.exe manage.py verify_offer_rules
+.\.venv\Scripts\python.exe manage.py verify_trip_schedule
 ```
 
 To show a nonempty queue chart without changing your real trip, run

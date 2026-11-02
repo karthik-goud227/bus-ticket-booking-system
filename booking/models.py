@@ -1,5 +1,6 @@
 """Core relational model. Seat inventory is one row per seat per trip."""
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 
@@ -45,6 +46,21 @@ class Trip(models.Model):
 
     def __str__(self):
         return f"{self.origin} → {self.destination} ({self.departure_at:%Y-%m-%d %H:%M})"
+
+    def clean(self):
+        super().clean()
+        if not self.bus_id or not self.departure_at or not self.arrival_at or self.is_cancelled:
+            return
+        if self.arrival_at <= self.departure_at:
+            raise ValidationError({"arrival_at": "Arrival must be after departure."})
+        overlap = Trip.objects.filter(
+            bus_id=self.bus_id, is_cancelled=False,
+            departure_at__lt=self.arrival_at, arrival_at__gt=self.departure_at,
+        )
+        if self.pk:
+            overlap = overlap.exclude(pk=self.pk)
+        if overlap.exists():
+            raise ValidationError({"bus": "This bus already has a trip during that time."})
 
 
 class Booking(models.Model):
