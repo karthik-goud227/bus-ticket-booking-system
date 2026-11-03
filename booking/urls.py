@@ -22,4 +22,8 @@ urlpatterns = [
     path("bookings/<int:booking_id>/cancel/", views.cancel, name="cancel"),
     path("bookings/<int:booking_id>/review/", views.review_bus, name="review_bus"),
     path("support/", views.support, name="support"),
+    path("account/", views.account_settings, name="account_settings"),
+    path("account/update/", views.update_account_settings, name="update_account_settings"),
+    path("account/history/", views.account_history, name="account_history"),
+    path("account/password/", auth_views.PasswordChangeView.as_view(template_name="booking/change_password.html", success_url="/account/"), name="change_password"),
 ]

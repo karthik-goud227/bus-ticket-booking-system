@@ -3,11 +3,17 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.db.models import Count
 
-from .models import Booking, BookingStatusEvent, Bus, BusReview, LoginEvent, Payment, RecurringTrip, Seat, SupportRequest, Trip, TripPoint, TripSeat, WaitlistEntry
+from .models import AccountProfile, Booking, BookingStatusEvent, Bus, BusReview, LoginEvent, Payment, RecurringTrip, Seat, SupportRequest, Trip, TripPoint, TripSeat, WaitlistEntry
 
 admin.site.site_header = "BusBook administration"
 admin.site.site_title = "BusBook admin"
 admin.site.index_title = "Fleet, passengers and booking activity"
+
+
+@admin.register(AccountProfile)
+class AccountProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "phone", "theme")
+    search_fields = ("user__username", "user__email", "phone")
 
 
 class PassengerBookingInline(admin.TabularInline):

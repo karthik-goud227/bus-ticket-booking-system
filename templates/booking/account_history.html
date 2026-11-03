@@ -1,0 +1,6 @@
+{% extends 'booking/base.html' %}
+{% block title %}Past journeys · BusBook{% endblock %}
+{% block content %}
+<section class="page-intro"><div><span class="eyebrow text-primary">YOUR ACCOUNT</span><h1>Past journeys</h1><p>Trips that have arrived, including cancelled or expired booking records.</p></div><a class="btn btn-outline-primary" href="{% url 'account_settings' %}">Account settings</a></section>
+<div class="booking-list">{% for booking in bookings %}<article class="card booking-item"><div class="booking-item-route"><div><h2>{{ booking.trip.origin }} → {{ booking.trip.destination }}</h2><p>{{ booking.trip.departure_at|date:'d M Y · g:i A' }} · {{ booking.trip.bus.operator_name }}</p></div></div><div class="booking-item-end"><span class="booking-reference">{{ booking.reference }}</span><span class="status-pill status-{{ booking.status|lower }}">{{ booking.get_status_display }}</span><a class="btn btn-outline-primary btn-sm" href="{% url 'booking_detail' booking.id %}">View record →</a></div></article>{% empty %}<div class="card empty-state"><h2>No past journeys yet</h2><p>Your completed trips will appear here.</p><a class="btn btn-primary" href="{% url 'home' %}">Find a trip</a></div>{% endfor %}</div>
+{% endblock %}

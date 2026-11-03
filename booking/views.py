@@ -6,6 +6,8 @@ from django.contrib.auth import login
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import connection
 from django.db.models import Exists, OuterRef
@@ -14,7 +16,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import Booking, Bus, BusReview, Payment, Seat, SupportRequest, Trip, TripPoint, TripSeat, WaitlistEntry
+from .models import AccountProfile, Booking, Bus, BusReview, Payment, Seat, SupportRequest, Trip, TripPoint, TripSeat, WaitlistEntry
 from .services import BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, leave_waitlist, refresh_trip
 
 
@@ -205,6 +207,59 @@ def signup(request):
         login(request, user)
         return redirect("home")
     return render(request, "booking/signup.html", {"form": form})
+
+
+@login_required
+def account_settings(request):
+    profile, _ = AccountProfile.objects.get_or_create(user=request.user)
+    return render(request, "booking/account_settings.html", {
+        "profile": profile,
+        "booking_count": Booking.objects.filter(user=request.user).count(),
+        "past_count": Booking.objects.filter(user=request.user, trip__arrival_at__lt=timezone.now()).count(),
+        "upcoming_count": Booking.objects.filter(user=request.user, status=Booking.Status.CONFIRMED, trip__departure_at__gt=timezone.now()).count(),
+    })
+
+
+@login_required
+@require_POST
+def update_account_settings(request):
+    profile, _ = AccountProfile.objects.get_or_create(user=request.user)
+    section = request.POST.get("section")
+    if section == "theme":
+        theme = request.POST.get("theme", "").upper()
+        if theme not in AccountProfile.Theme.values:
+            messages.error(request, "Choose a valid display mode.")
+        else:
+            profile.theme = theme
+            profile.save(update_fields=["theme"])
+            messages.success(request, "Display preference saved.")
+    elif section == "profile":
+        first = request.POST.get("first_name", "").strip()
+        last = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        try:
+            if email:
+                validate_email(email)
+            if len(first) > 150 or len(last) > 150 or len(email) > 254:
+                raise ValidationError("A profile field is too long.")
+            if phone and (not re.fullmatch(r"[+()\d\s-]+", phone) or not 10 <= len(re.sub(r"\D", "", phone)) <= 15):
+                raise ValidationError("Enter a valid phone number (10 to 15 digits).")
+        except ValidationError as error:
+            messages.error(request, "; ".join(error.messages))
+        else:
+            request.user.first_name, request.user.last_name, request.user.email = first, last, email
+            request.user.save(update_fields=["first_name", "last_name", "email"])
+            profile.phone = phone
+            profile.save(update_fields=["phone"])
+            messages.success(request, "Profile updated.")
+    return redirect("account_settings")
+
+
+@login_required
+def account_history(request):
+    bookings = Booking.objects.filter(user=request.user, trip__arrival_at__lt=timezone.now()).select_related("trip", "trip__bus").order_by("-trip__departure_at", "-id")
+    return render(request, "booking/account_history.html", {"bookings": bookings})
 
 
 def trip_detail(request, trip_id):

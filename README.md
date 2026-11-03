@@ -133,6 +133,13 @@ reviews. The footer links to an in-app support desk where signed-in passengers
 can submit questions and track responses; staff handle requests in admin.
 No telephone number or real payment service is represented in this demo.
 
+Signed-in users can open **Account** to update their name, email, and phone,
+change their password, and choose Light, Dark, or device-based appearance.
+The preference is stored in Oracle on their account profile. A separate
+**Past journeys** page lists booking records for trips that have arrived.
+Profile name and phone can prefill future booking forms; tickets retain the
+passenger details saved at booking time.
+
 Run `manage.py process_expiries` periodically if you want automatic cleanup
 while no one is browsing. Repeated runs are safe.
 Cancelled, departed, and inactive-bus trips cannot accept new holds or queue

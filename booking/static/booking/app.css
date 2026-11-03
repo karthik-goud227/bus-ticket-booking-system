@@ -79,6 +79,27 @@ body { min-height:100vh; background:#f3f7fb; color:var(--ink); font-family:Inter
 .fare-preview small { display:block; margin-top:12px; color:#60798c; }
 .support-form,.review-panel { max-width:780px; }
 @media(max-width:700px) { .support-footer { grid-template-columns:1fr; gap:20px; } }
+.account-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.account-summary a { display:grid; gap:5px; color:var(--ink); text-decoration:none; }
+.account-summary strong { font-size:1.8rem; }
+.account-summary span { color:var(--muted); }
+.account-panel { height:auto; }
+.account-panel form p input { width:100%; padding:9px 12px; border:1px solid #d5e1eb; border-radius:10px; }
+@media(max-width:700px) { .account-summary { grid-template-columns:1fr; } }
+html[data-effective-theme="light"] { color-scheme:light; }
+html[data-effective-theme="dark"] { color-scheme:dark; --ink:#e8f0f7; --muted:#acbfd0; --line:#314a5c; }
+html[data-effective-theme="dark"] body { background:#0d1925; color:#e8f0f7; }
+html[data-effective-theme="dark"] :is(.card,.search-panel,.trip-result,.booking-item,.offer-card,.staff-section,.staff-metric,.metric-card,.ticket-card,.payment-record,.journey-card,.auth-card) { background:#192b3b; color:#e8f0f7; border-color:#344b5d; box-shadow:none; }
+html[data-effective-theme="dark"] :is(.bus-frame,.fare-preview,.seat-frame,.queue-summary,.ticket-note,.staff-state-grid div) { background:#203447; color:#e8f0f7; border-color:#40596b; }
+html[data-effective-theme="dark"] :is(.form-control,select,textarea,.account-panel form p input) { background:#132535; color:#edf4fa; border-color:#4a6275; }
+html[data-effective-theme="dark"] :is(.form-control,select,textarea)::placeholder { color:#94aabe; }
+html[data-effective-theme="dark"] :is(.text-secondary,.section-note,.trip-result-label,.support-footer p,.site-footer,.ticket-route small,.ticket-details small,.ticket-passenger small,.payment-record small) { color:#b3c6d6!important; }
+html[data-effective-theme="dark"] :is(.site-footer,.ticket-footer,.ticket-rule,.fare-grand) { border-color:#40596b; }
+html[data-effective-theme="dark"] :is(.route-line span,.ticket-body) { background:#192b3b; color:#e8f0f7; }
+html[data-effective-theme="dark"] :is(.staff-metric span,.staff-metric small,.staff-table th,.support-footer strong,.account-summary span) { color:#b3c6d6; }
+html[data-effective-theme="dark"] :is(.staff-metric strong,.ticket-route strong,.ticket-details strong,.account-summary strong) { color:#f0f6fa; }
+html[data-effective-theme="dark"] .seat-tile.unavailable { color:#8ba2b4; }
+@media print { html[data-effective-theme="dark"] body,html[data-effective-theme="dark"] .ticket-card,html[data-effective-theme="dark"] .ticket-body { background:white!important; color:#102d4d!important; } html[data-effective-theme="dark"] .route-line span { background:white!important; color:#315d78!important; } html[data-effective-theme="dark"] .ticket-details strong,html[data-effective-theme="dark"] .ticket-route strong { color:#102d4d!important; } }
 .ticket-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .ticket-card { max-width:920px; margin:auto; overflow:hidden; border:1px solid #d8e5ef; border-radius:24px; background:white; box-shadow:0 20px 50px #153c5b18; }
 .ticket-header { display:flex; justify-content:space-between; align-items:start; gap:20px; padding:32px 38px; background:linear-gradient(115deg,#102d4d,#1c6785); color:white; }

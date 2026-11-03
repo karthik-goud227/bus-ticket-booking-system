@@ -284,3 +284,14 @@ class LoginEvent(models.Model):
     class Meta:
         ordering = ["-occurred_at", "-id"]
         indexes = [models.Index(fields=["user", "occurred_at"], name="idx_login_user_time")]
+
+
+class AccountProfile(models.Model):
+    class Theme(models.TextChoices):
+        SYSTEM = "SYSTEM", "Use device setting"
+        LIGHT = "LIGHT", "Light"
+        DARK = "DARK", "Dark"
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="account_profile")
+    phone = models.CharField(max_length=20, blank=True)
+    theme = models.CharField(max_length=6, choices=Theme.choices, default=Theme.SYSTEM)
