@@ -25,6 +25,10 @@ The amounts are stored on Booking at hold time. Confirming creates a Payment
 for exactly that total. Cancellation records a simulated refund of the same
 amount. The tax example is for a classroom demonstration and is not a claim
 about a real operator's current tax treatment.
+Migration `0015_bill_integrity` adds Oracle CHECK constraints requiring every
+component to be nonnegative and the stored total to equal their sum. Run
+`manage.py verify_bill_integrity` after migration to check all saved bills and
+prove Oracle rejects a one-paisa mismatch; its probe is rolled back.
 
 BusReview has one row per booking. The application accepts a 1–5 star review
 only from the booking owner, after a confirmed trip has arrived. Oracle

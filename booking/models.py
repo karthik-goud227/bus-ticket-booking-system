@@ -152,6 +152,8 @@ class Booking(models.Model):
         constraints = [
             models.CheckConstraint(condition=Q(total_fare__gte=0), name="ck_booking_fare"),
             models.CheckConstraint(condition=Q(status__in=["HELD", "CONFIRMED", "CANCELLED", "EXPIRED"]), name="ck_booking_status"),
+            models.CheckConstraint(condition=Q(base_fare__gte=0, platform_fee__gte=0, service_fee__gte=0, gst_amount__gte=0), name="ck_bill_parts_nonnegative"),
+            models.CheckConstraint(condition=Q(total_fare=models.F("base_fare") + models.F("platform_fee") + models.F("service_fee") + models.F("gst_amount")), name="ck_bill_total_matches_parts"),
         ]
 
 
