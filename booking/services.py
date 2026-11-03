@@ -1,11 +1,12 @@
 """Short, atomic operations that own seat inventory changes."""
 from datetime import timedelta
+from decimal import Decimal, ROUND_HALF_UP
 from uuid import uuid4
 
 from django.db import transaction
 from django.utils import timezone
 
-from .models import Booking, Payment, Trip, TripSeat, WaitlistEntry
+from .models import Booking, Payment, Trip, TripPoint, TripSeat, WaitlistEntry
 
 
 HOLD_MINUTES = 10
@@ -14,6 +15,15 @@ OFFER_MINUTES = 10
 
 class BookingConflict(Exception):
     pass
+
+
+def fare_breakdown(seat_fare, seat_count):
+    base = (Decimal(str(seat_fare)) * seat_count).quantize(Decimal("0.01"))
+    platform = Decimal("20.00")
+    service = Decimal("10.00")
+    gst = ((platform + service) * Decimal("0.18")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    return {"base": base, "platform": platform, "service": service, "gst": gst,
+            "total": base + platform + service + gst}
 
 
 def _release_expired(trip_id, now):
@@ -95,7 +105,7 @@ def refresh_trip(trip_id):
 
 
 @transaction.atomic
-def hold_seats(*, user, trip, seat_ids, waitlist_entry=None, passenger_name="", passenger_phone=""):
+def hold_seats(*, user, trip, seat_ids, waitlist_entry=None, passenger_name="", passenger_phone="", boarding_point_id=None, dropoff_point_id=None):
     """Lock selected inventory rows and claim all requested seats or none."""
     now = timezone.now()
     ids = sorted(set(int(value) for value in seat_ids))
@@ -104,6 +114,11 @@ def hold_seats(*, user, trip, seat_ids, waitlist_entry=None, passenger_name="", 
     trip = Trip.objects.select_for_update().get(id=trip.id)
     if trip.is_cancelled or not trip.bus.is_active or trip.departure_at <= now:
         raise BookingConflict("This trip is no longer open for booking.")
+    boarding = TripPoint.objects.filter(trip=trip, kind=TripPoint.Kind.BOARDING, id=boarding_point_id).first() if boarding_point_id else TripPoint.objects.filter(trip=trip, kind=TripPoint.Kind.BOARDING).order_by("scheduled_at", "id").first()
+    dropoff = TripPoint.objects.filter(trip=trip, kind=TripPoint.Kind.DROPOFF, id=dropoff_point_id).first() if dropoff_point_id else TripPoint.objects.filter(trip=trip, kind=TripPoint.Kind.DROPOFF).order_by("scheduled_at", "id").first()
+    if (not boarding or not dropoff or boarding.scheduled_at >= dropoff.scheduled_at
+            or boarding.scheduled_at < trip.departure_at or dropoff.scheduled_at > trip.arrival_at):
+        raise BookingConflict("Choose valid boarding and drop-off points for this trip.")
     released = _release_expired(trip.id, now)
     released.extend(_expire_offers(trip.id, now))
     _offer_next(trip.id, released, now)
@@ -130,11 +145,14 @@ def hold_seats(*, user, trip, seat_ids, waitlist_entry=None, passenger_name="", 
         if offer is not None and (waitlist_entry is None or offer.id != waitlist_entry.id):
             raise BookingConflict("A selected seat is reserved for the waiting list.")
     deadline = now + timedelta(minutes=HOLD_MINUTES)
+    charges = fare_breakdown(trip.fare, len(seats))
     booking = Booking.objects.create(
         reference=uuid4().hex[:12].upper(), user=user, trip=trip,
-        total_fare=trip.fare * len(seats), hold_expires_at=deadline,
+        total_fare=charges["total"], hold_expires_at=deadline,
         passenger_name=passenger_name or user.get_full_name() or user.username,
         passenger_phone=passenger_phone,
+        boarding_point=boarding, dropoff_point=dropoff, base_fare=charges["base"],
+        platform_fee=charges["platform"], service_fee=charges["service"], gst_amount=charges["gst"],
     )
     for seat in seats:
         seat.status = TripSeat.Status.HELD

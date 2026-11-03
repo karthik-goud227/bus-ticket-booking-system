@@ -51,6 +51,11 @@ class Trip(models.Model):
     def __str__(self):
         return f"{self.origin} → {self.destination} ({self.departure_at:%Y-%m-%d %H:%M})"
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        TripPoint.objects.get_or_create(trip=self, kind=TripPoint.Kind.BOARDING, name=f"{self.origin} Bus Stand", defaults={"scheduled_at": self.departure_at})
+        TripPoint.objects.get_or_create(trip=self, kind=TripPoint.Kind.DROPOFF, name=f"{self.destination} Bus Stand", defaults={"scheduled_at": self.arrival_at})
+
     @property
     def duration_label(self):
         minutes = int((self.arrival_at - self.departure_at).total_seconds() // 60)
@@ -71,6 +76,28 @@ class Trip(models.Model):
             overlap = overlap.exclude(pk=self.pk)
         if overlap.exists():
             raise ValidationError({"bus": "This bus already has a trip during that time."})
+
+
+class TripPoint(models.Model):
+    class Kind(models.TextChoices):
+        BOARDING = "BOARDING", "Boarding"
+        DROPOFF = "DROPOFF", "Drop-off"
+
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="points")
+    kind = models.CharField(max_length=8, choices=Kind.choices)
+    name = models.CharField(max_length=120)
+    scheduled_at = models.DateTimeField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["trip", "kind", "name"], name="uq_trip_point")]
+
+    def __str__(self):
+        return f"{self.name} ({self.get_kind_display()})"
+
+    def clean(self):
+        super().clean()
+        if self.trip_id and self.scheduled_at and not self.trip.departure_at <= self.scheduled_at <= self.trip.arrival_at:
+            raise ValidationError({"scheduled_at": "Point time must fall within the trip's schedule."})
 
 
 class RecurringTrip(models.Model):
@@ -113,6 +140,12 @@ class Booking(models.Model):
     cancelled_at = models.DateTimeField(null=True, blank=True)
     passenger_name = models.CharField(max_length=100, blank=True)
     passenger_phone = models.CharField(max_length=20, blank=True)
+    boarding_point = models.ForeignKey(TripPoint, on_delete=models.PROTECT, related_name="boardings", null=True, blank=True)
+    dropoff_point = models.ForeignKey(TripPoint, on_delete=models.PROTECT, related_name="dropoffs", null=True, blank=True)
+    base_fare = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    platform_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    service_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    gst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     class Meta:
         indexes = [models.Index(fields=["user", "created_at"], name="idx_booking_user_created")]
@@ -202,6 +235,28 @@ class Payment(models.Model):
             models.CheckConstraint(condition=Q(amount__gte=0), name="ck_payment_amount"),
             models.CheckConstraint(condition=Q(status__in=["CAPTURED", "REFUNDED"]), name="ck_payment_status"),
         ]
+
+
+class BusReview(models.Model):
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name="review")
+    bus = models.ForeignKey(Bus, on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="bus_reviews")
+    rating = models.PositiveSmallIntegerField()
+    comment = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=Q(rating__gte=1, rating__lte=5), name="ck_review_rating")]
+
+
+class SupportRequest(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="support_requests")
+    booking = models.ForeignKey(Booking, on_delete=models.SET_NULL, null=True, blank=True)
+    subject = models.CharField(max_length=120)
+    message = models.TextField(max_length=2000)
+    status = models.CharField(max_length=12, choices=[("OPEN", "Open"), ("IN_PROGRESS", "In progress"), ("RESOLVED", "Resolved")], default="OPEN")
+    staff_response = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class BookingStatusEvent(models.Model):

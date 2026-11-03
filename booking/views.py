@@ -9,12 +9,12 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import connection
 from django.db.models import Exists, OuterRef
-from django.db.models import Count
+from django.db.models import Avg, Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import Booking, Bus, Payment, Seat, Trip, TripSeat, WaitlistEntry
+from .models import Booking, Bus, BusReview, Payment, Seat, SupportRequest, Trip, TripPoint, TripSeat, WaitlistEntry
 from .services import BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, leave_waitlist, refresh_trip
 
 
@@ -186,6 +186,9 @@ def home(request):
             availability = dict(cursor.fetchall())
         for trip in trip_list:
             trip.bookable_seats = availability.get(trip.id, 0)
+    ratings = {row["bus_id"]: row for row in BusReview.objects.filter(bus_id__in=[trip.bus_id for trip in trip_list]).values("bus_id").annotate(score=Avg("rating"), count=Count("id"))}
+    for trip in trip_list:
+        trip.rating = ratings.get(trip.bus_id)
     return render(request, "booking/home.html", {
         "trips": trip_list, "origin": origin, "destination": destination, "date": date,
         "sort": sort, "only_available": only_available,
@@ -229,6 +232,8 @@ def trip_detail(request, trip_id):
     return render(request, "booking/trip.html", {
         "trip": trip, "decks": decks,
         "available_count": available_count, "trip_open": trip_open,
+        "boarding_points": trip.points.filter(kind=TripPoint.Kind.BOARDING).order_by("scheduled_at", "id"),
+        "dropoff_points": trip.points.filter(kind=TripPoint.Kind.DROPOFF).order_by("scheduled_at", "id"),
     })
 
 
@@ -239,7 +244,8 @@ def create_hold(request, trip_id):
     try:
         name, phone = passenger_details(request.POST)
         booking = hold_seats(user=request.user, trip=trip, seat_ids=request.POST.getlist("seats"),
-                             passenger_name=name, passenger_phone=phone)
+                             passenger_name=name, passenger_phone=phone,
+                             boarding_point_id=request.POST.get("boarding_point"), dropoff_point_id=request.POST.get("dropoff_point"))
         return redirect("booking_detail", booking_id=booking.id)
     except (BookingConflict, ValueError) as error:
         messages.error(request, str(error))
@@ -279,6 +285,7 @@ def accept_offer(request, entry_id):
         booking = hold_seats(
             user=request.user, trip=entry.trip, seat_ids=[entry.offered_seat_id], waitlist_entry=entry,
             passenger_name=name, passenger_phone=phone,
+            boarding_point_id=request.POST.get("boarding_point"), dropoff_point_id=request.POST.get("dropoff_point"),
         )
         return redirect("booking_detail", booking_id=booking.id)
     except (BookingConflict, ValueError, TypeError) as error:
@@ -309,6 +316,8 @@ def my_bookings(request):
         positions = dict(cursor.fetchall())
     for entry in waitlist_entries:
         entry.queue_position = positions.get(entry.id)
+        entry.boarding_points = entry.trip.points.filter(kind=TripPoint.Kind.BOARDING).order_by("scheduled_at", "id")
+        entry.dropoff_points = entry.trip.points.filter(kind=TripPoint.Kind.DROPOFF).order_by("scheduled_at", "id")
     return render(request, "booking/my_bookings.html", {
         "bookings": bookings, "waitlist_entries": waitlist_entries,
     })
@@ -328,8 +337,47 @@ def booking_detail(request, booking_id):
         for part in re.split(r"(\d+)", inventory.seat.number)
     ])
     payment = Payment.objects.filter(booking=booking).first()
+    can_review = booking.status == Booking.Status.CONFIRMED and booking.trip.arrival_at <= timezone.now() and not BusReview.objects.filter(booking=booking).exists()
     return render(request, "booking/booking_detail.html", {
-        "booking": booking, "seats": seats, "payment": payment,
+        "booking": booking, "seats": seats, "payment": payment, "can_review": can_review,
+    })
+
+
+@login_required
+@require_POST
+def review_bus(request, booking_id):
+    booking = get_object_or_404(Booking.objects.select_related("trip"), id=booking_id, user=request.user)
+    try:
+        rating = int(request.POST.get("rating", ""))
+    except ValueError:
+        rating = 0
+    if booking.status != Booking.Status.CONFIRMED or booking.trip.arrival_at > timezone.now() or not 1 <= rating <= 5:
+        messages.error(request, "Reviews are available after a completed, confirmed journey. Choose 1 to 5 stars.")
+    elif BusReview.objects.filter(booking=booking).exists():
+        messages.error(request, "You have already rated this journey.")
+    else:
+        BusReview.objects.create(booking=booking, bus=booking.trip.bus, user=request.user,
+                                 rating=rating, comment=request.POST.get("comment", "").strip()[:500])
+        messages.success(request, "Thank you for rating your bus.")
+    return redirect("booking_detail", booking_id=booking_id)
+
+
+@login_required
+def support(request):
+    if request.method == "POST":
+        subject = request.POST.get("subject", "").strip()
+        message = request.POST.get("message", "").strip()
+        booking_id = request.POST.get("booking", "")
+        booking = Booking.objects.filter(id=booking_id, user=request.user).first() if booking_id.isdigit() else None
+        if not 3 <= len(subject) <= 120 or not 10 <= len(message) <= 2000:
+            messages.error(request, "Enter a subject and a message of at least 10 characters.")
+        else:
+            SupportRequest.objects.create(user=request.user, booking=booking, subject=subject, message=message)
+            messages.success(request, "Support request received. You can track its status below.")
+            return redirect("support")
+    return render(request, "booking/support.html", {
+        "bookings": Booking.objects.filter(user=request.user).order_by("-created_at")[:30],
+        "requests": SupportRequest.objects.filter(user=request.user).order_by("-created_at")[:30],
     })
 
 

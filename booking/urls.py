@@ -20,4 +20,6 @@ urlpatterns = [
     path("bookings/<int:booking_id>/", views.booking_detail, name="booking_detail"),
     path("bookings/<int:booking_id>/confirm/", views.confirm, name="confirm"),
     path("bookings/<int:booking_id>/cancel/", views.cancel, name="cancel"),
+    path("bookings/<int:booking_id>/review/", views.review_bus, name="review_bus"),
+    path("support/", views.support, name="support"),
 ]

@@ -30,6 +30,6 @@
   {% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>{% endfor %}
   {% block content %}{% endblock %}
 </main>
-<footer class="site-footer"><div class="container d-flex justify-content-between flex-wrap gap-2"><span class="footer-identity"><img class="college-logo footer-logo" src="{% static 'booking/iiitdm-kurnool-logo.jpg' %}" alt=""><span>IIITDM Kurnool · BusBook student project</span></span><span>Bookings and payments in this demo are simulated.</span></div></footer>
+<footer class="site-footer"><div class="container support-footer"><div><span class="footer-identity"><img class="college-logo footer-logo" src="{% static 'booking/iiitdm-kurnool-logo.jpg' %}" alt=""><span>IIITDM Kurnool · BusBook</span></span><p>Student project · Bookings and payments are simulated.</p></div><div><strong>Need help?</strong><p>Raise a booking, cancellation, refund, or journey question through our in-app support desk.</p><a href="{% url 'support' %}">Open support desk →</a></div><div><strong>Quick links</strong><a href="{% url 'home' %}">Find trips</a><a href="{% url 'my_bookings' %}">My bookings</a></div></div></footer>
 </body>
 </html>

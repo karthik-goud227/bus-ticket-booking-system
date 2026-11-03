@@ -119,6 +119,20 @@ prints the teammate link; restart it after changing Wi-Fi or hotspot.
    active waiting-list demand sourced from Oracle reporting views.
 
 Expired holds and offers are processed when the trip seat map is accessed.
+Each trip has a default city bus-stand boarding and drop-off point; staff can
+add more timed points under **Trip points** in admin. Passengers choose points
+when holding a seat or accepting an offer. A booking saves its seat subtotal,
+₹20 platform fee, ₹10 service fee, and illustrative 18% GST on those fees
+(₹5.40), then charges the same total in the simulated payment record. Older
+bookings keep their original total without retroactive fees. The ticket shows
+the full breakdown and the selected journey points.
+
+After a confirmed trip has arrived, its passenger can submit one 1–5 star bus
+review from the booking page. Trip search shows the average of verified
+reviews. The footer links to an in-app support desk where signed-in passengers
+can submit questions and track responses; staff handle requests in admin.
+No telephone number or real payment service is represented in this demo.
+
 Run `manage.py process_expiries` periodically if you want automatic cleanup
 while no one is browsing. Repeated runs are safe.
 Cancelled, departed, and inactive-bus trips cannot accept new holds or queue

@@ -69,6 +69,16 @@ body { min-height:100vh; background:#f3f7fb; color:var(--ink); font-family:Inter
 .occupancy-fill { height:100%; border-radius:20px; background:linear-gradient(90deg,#1c69bd,#1fbda1); }
 .queue-summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:24px 0 8px; }.queue-summary > div { padding:18px 20px; border:1px solid #d8e8ed; border-radius:15px; background:#f5fbfa; }.queue-summary span { display:block; color:#5f7c8e; font-size:.68rem; font-weight:850; letter-spacing:.11em; }.queue-summary strong { display:block; margin-top:6px; color:#0f6159; font-size:1.85rem; line-height:1; }.queue-demand-row { padding:19px 0; border-top:1px solid var(--line); }.queue-demand-row span { color:#617c8f; font-size:.85rem; }.queue-fill { height:100%; border-radius:20px; background:linear-gradient(90deg,#178c9c,#32c7a7); }.queue-empty { margin:22px 0 0; padding:20px; border:1px dashed #cbdde5; border-radius:13px; background:#f8fbfd; color:#617b8d; text-align:center; }
 .site-footer { padding:24px 0; color:#728699; border-top:1px solid #dfe9f0; font-size:.82rem; }
+.support-footer { display:grid; grid-template-columns:1.5fr 1.4fr .7fr; gap:35px; }
+.support-footer strong { display:block; color:#29485f; margin-bottom:8px; }
+.support-footer p { margin:8px 0; max-width:380px; }
+.support-footer a { display:block; color:#155fc0; font-weight:700; margin-top:6px; }
+.fare-preview { padding:20px; border:1px solid #d7e6ec; border-radius:14px; background:#f8fbfc; }
+.fare-preview > div { display:flex; justify-content:space-between; gap:20px; padding:5px 0; }
+.fare-preview .fare-grand { margin-top:10px; padding-top:12px; border-top:1px solid #cbdde5; font-size:1.1rem; }
+.fare-preview small { display:block; margin-top:12px; color:#60798c; }
+.support-form,.review-panel { max-width:780px; }
+@media(max-width:700px) { .support-footer { grid-template-columns:1fr; gap:20px; } }
 .ticket-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .ticket-card { max-width:920px; margin:auto; overflow:hidden; border:1px solid #d8e5ef; border-radius:24px; background:white; box-shadow:0 20px 50px #153c5b18; }
 .ticket-header { display:flex; justify-content:space-between; align-items:start; gap:20px; padding:32px 38px; background:linear-gradient(115deg,#102d4d,#1c6785); color:white; }

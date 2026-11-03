@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.db.models import Count
 
-from .models import Booking, BookingStatusEvent, Bus, LoginEvent, Payment, RecurringTrip, Seat, Trip, TripSeat, WaitlistEntry
+from .models import Booking, BookingStatusEvent, Bus, BusReview, LoginEvent, Payment, RecurringTrip, Seat, SupportRequest, Trip, TripPoint, TripSeat, WaitlistEntry
 
 admin.site.site_header = "BusBook administration"
 admin.site.site_title = "BusBook admin"
@@ -106,6 +106,13 @@ class TripAdmin(admin.ModelAdmin):
         self.message_user(request, f"Added {count} missing trip seats.")
 
 
+@admin.register(TripPoint)
+class TripPointAdmin(admin.ModelAdmin):
+    list_display = ("trip", "kind", "name", "scheduled_at")
+    list_filter = ("kind",)
+    search_fields = ("name", "trip__origin", "trip__destination")
+
+
 @admin.register(RecurringTrip)
 class RecurringTripAdmin(admin.ModelAdmin):
     list_display = ("bus", "origin", "destination", "departure_time", "duration_minutes", "fare", "is_active")
@@ -134,9 +141,31 @@ class BookingAdmin(admin.ModelAdmin):
     list_display = ("reference", "user", "passenger_name", "passenger_phone", "trip", "status", "total_fare", "created_at")
     list_filter = ("status", "trip__departure_at")
     search_fields = ("reference", "user__username", "trip__origin", "trip__destination")
-    readonly_fields = ("reference", "user", "passenger_name", "passenger_phone", "trip", "status", "total_fare", "created_at", "hold_expires_at", "confirmed_at", "cancelled_at")
+    readonly_fields = ("reference", "user", "passenger_name", "passenger_phone", "trip", "boarding_point", "dropoff_point", "base_fare", "platform_fee", "service_fee", "gst_amount", "status", "total_fare", "created_at", "hold_expires_at", "confirmed_at", "cancelled_at")
     list_select_related = ("user", "trip")
     inlines = (BookingStatusEventInline,)
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(BusReview)
+class BusReviewAdmin(admin.ModelAdmin):
+    list_display = ("bus", "user", "rating", "created_at")
+    list_filter = ("rating", "bus")
+    readonly_fields = ("booking", "bus", "user", "rating", "comment", "created_at")
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(SupportRequest)
+class SupportRequestAdmin(admin.ModelAdmin):
+    list_display = ("subject", "user", "booking", "status", "created_at")
+    list_filter = ("status", "created_at")
+    search_fields = ("subject", "user__username", "booking__reference")
+    readonly_fields = ("user", "booking", "subject", "message", "created_at")
+    list_select_related = ("user", "booking")
 
     def has_add_permission(self, request):
         return False
