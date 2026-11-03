@@ -250,3 +250,10 @@ dated trips and skipped seven time slots already occupied by a bus. The
 read-only `verify_fleet_layout` command then passed: all 14 buses have at
 least 24 seats, all 111 trips have complete trip-seat inventory, three buses
 have upper and lower decks, and 80 physical places are sleeping berths.
+## Oracle bill arithmetic constraint
+
+Migration `booking.0015_bill_integrity` applied successfully on 3 November
+2026. `verify_bill_integrity` checked all 13 saved booking bills and found
+their components matched each stored total. Its one-paisa mismatch probe was
+rejected by Oracle with `ORA-02290`; the command confirmed no booking changed.
+
