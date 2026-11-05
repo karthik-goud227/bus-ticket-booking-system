@@ -169,6 +169,11 @@ the chart. Press Enter in PowerShell to remove all temporary rows. The seat
 offer lasts 10 minutes; rerun the command if it expires before the screenshot.
 
 Read `docs/er_model.md` for the ER diagram and normalization discussion,
+`docs/fd_normalization_worked_example.md` for attribute closure, candidate
+keys, a canonical cover, and a BCNF decomposition,
+`docs/course_alignment.md` for a precise map to the CS302/AD302 lecture plan,
+`docs/course_sql_lab.sql` for non-destructive set operations, nested queries,
+aggregates, NULL handling, and Oracle plan inspection,
 `docs/dbms_demo_path.md` for the presentation sequence,
 `docs/live_sql_demo.sql` with `docs/live_sql_demo.md` for a read-only SQL
 Developer walkthrough, and
