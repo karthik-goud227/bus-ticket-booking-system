@@ -185,7 +185,8 @@ keys, a canonical cover, and a BCNF decomposition,
 aggregates, NULL handling, and Oracle plan inspection,
 `docs/dbms_demo_path.md` for the presentation sequence,
 `docs/live_sql_demo.sql` with `docs/live_sql_demo.md` for a read-only SQL
-Developer walkthrough, and
+Developer walkthrough, `docs/live_relational_demo.sql` for the expanded live
+entity, foreign-key, booking, and integrity demonstration, and
 `docs/observed_dbms_results.md` for recorded local results. Run
 `docs/dbms_evidence.sql` and `docs/query_plans.sql` in SQL Developer as
 `BUSBOOKING`. `docs/recovery_drill.md` documents the Oracle Data Pump export
