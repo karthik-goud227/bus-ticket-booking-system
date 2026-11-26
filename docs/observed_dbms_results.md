@@ -257,3 +257,12 @@ Migration `booking.0015_bill_integrity` applied successfully on 3 November
 their components matched each stored total. Its one-paisa mismatch probe was
 rejected by Oracle with `ORA-02290`; the command confirmed no booking changed.
 
+## Dynamic fare policy verification
+
+On 26 November 2026, the user ran `manage.py verify_bill_integrity` against
+the project Oracle database. The command reported **14 saved bills balanced**.
+Oracle rejected both an incorrect total and a deliberately incorrect dynamic
+service fee with `ORA-02290`; no booking was changed. The successful policy
+probe shows that migration `0016` is active. This verifies stored bills and
+rolled-back probes; it does not independently retest the browser flow.
+

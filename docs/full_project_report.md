@@ -204,7 +204,7 @@ The worked derivation in `docs/fd_normalization_worked_example.md` starts from a
 
 Some duplication is intentional and governed: `Booking.base_fare`, fees, tax and total preserve the price agreed at hold time even if `Trip.fare` changes later; passenger contact fields preserve the ticket snapshot when an account profile changes. The DBMS check enforces `total_fare = base_fare + platform_fee + service_fee + gst_amount`. `TripSeat.status` is the current lockable inventory state, while `BookingStatusEvent` preserves transitions. A separate operator relation would be justified if operator contacts, contracts or permissions became first-class data; at present operator name is an attribute of `Bus`.
 
-From fare policy version 2, platform fee is fixed at ₹20 per booking; service fee is 2% of the selected-seat subtotal and illustrative GST is 18% of those two fees, with each percentage rounded to paise. The booking stores its policy version. Migration `0016` adds an Oracle check for the version 2 fee and GST formulas while preserving version 1 historical bills. The earlier 3 November bill test in section 6.1 predates this change and remains a dated result; it does not assert that the new policy has been migrated or tested on the user's current database.
+From fare policy version 2, platform fee is fixed at ₹20 per booking; service fee is 2% of the selected-seat subtotal and illustrative GST is 18% of those two fees, with each percentage rounded to paise. The booking stores its policy version. Migration `0016` adds an Oracle check for the version 2 fee and GST formulas while preserving version 1 historical bills. The earlier 3 November bill test predates this change; a later 26 November verification checked 14 saved bills and observed Oracle reject an incorrect dynamic service fee.
 
 ### 4.3 Physical schema and integrity rules
 
@@ -238,7 +238,7 @@ This matters because a read-then-write check without a lock can let two sessions
 
 Oracle Data Pump exported the `BUSBOOKING` schema to a server-side dump and imported a checkpoint into `BUSBOOKING_RESTORE` with `REMAP_SCHEMA`. The restored *historical checkpoint* held one trip, ten inventory rows, five bookings, five payments and one waiting entry; three views and the two then-existing triggers were valid. The separate restore account was removed afterward. This demonstrated point-in-time recovery, not ongoing scheduled backups. No private dump or password was placed in GitHub.
 
-Django migration provenance is explicit: `0001` base domain, `0002` payment, `0003` integrity triggers, `0004` reporting views, `0005` active-queue uniqueness, `0006`-`0007` audit trigger and repair, `0008` offer rules, `0009`-`0010` schedule guard and repair, `0011` login events, `0012` fleet layout/passenger fields/recurrence, `0013` service-billing-reviews, `0014` account profiles, `0015` bill integrity, and `0016` versioned dynamic pricing. Existing installations apply only outstanding migrations; the recorded user run applied `0015` successfully, while `0016` still needs a live application. The Git repository stores migration source, not a copy of the live Oracle data.
+Django migration provenance is explicit: `0001` base domain, `0002` payment, `0003` integrity triggers, `0004` reporting views, `0005` active-queue uniqueness, `0006`-`0007` audit trigger and repair, `0008` offer rules, `0009`-`0010` schedule guard and repair, `0011` login events, `0012` fleet layout/passenger fields/recurrence, `0013` service-billing-reviews, `0014` account profiles, `0015` bill integrity, and `0016` versioned dynamic pricing. Existing installations apply only outstanding migrations; the successful policy probe on 26 November shows `0016` is active on the user's Oracle installation. The Git repository stores migration source, not a copy of the live Oracle data.
 
 ### 4.7 DBMS concept-to-implementation map
 
@@ -297,6 +297,7 @@ The interface includes responsive trip cards, a seat map with availability state
 | `verify_trip_schedule` | Same-bus overlap rejected; adjacent and different-bus trips accepted |
 | `verify_fleet_layout` | On 2 Nov: 14 buses with 24+ places, 111 trips with complete inventory, 3 double-deckers, 80 berths |
 | `verify_bill_integrity` | On 3 Nov: 13 bills balanced; a one-paisa invalid total rejected with `ORA-02290`; no booking changed |
+| `verify_bill_integrity` after dynamic policy | On 26 Nov: 14 bills balanced; Oracle rejected an invalid total and incorrect version 2 service fee with `ORA-02290`; no booking changed |
 | `manage.py check` and `migrate` | User reported no system-check issues and migration `0015` applied successfully |
 
 Test commands use isolated probe rows or remove their temporary data as stated in their outputs. These results are evidence of particular cases, not a proof of all possible interleavings or production load. The one-paisa row was intentionally invalid test data; rejection is the desired behavior, so no stored bill needed a repair.
@@ -308,6 +309,7 @@ Test commands use isolated probe rows or remove their temporary data as stated i
 | 2 Nov, read-only earlier snapshot | 13 buses, 33 trips, 244 physical places, 640 trip-seat rows | Historical count before later fleet expansion |
 | 2 Nov, fleet verifier after upgrade/generation | 14 buses with 24+ places; 111 complete-inventory trips; 3 double-deckers; 80 berths | Later verified fleet condition, not guaranteed current count |
 | 3 Nov, bill verifier | 13 saved bills balanced | Later sample of stored bookings |
+| 26 Nov, dynamic bill verifier | 14 saved bills balanced; wrong total and wrong version 2 service fee rejected | Later live Oracle constraint verification |
 | Earlier Data Pump checkpoint | 1 trip, 10 inventory rows, 5 bookings, 5 payments, 1 queue entry | Separate restored historical snapshot |
 
 The earlier 13-bus/33-trip numbers and the later 14-bus/111-trip verifier come from different moments and must not be merged into one live total. The report preparation did not reconnect to the user's private Oracle schema, so no 5 November live totals are claimed. The latest counts should be read from `V_TRIP_OCCUPANCY` and the tables on presentation day.
@@ -369,7 +371,7 @@ $env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $secure).Password
 
 The public source repository is https://github.com/karthik-goud227/bus-ticket-booking-system. The main implementation is in `booking/models.py` (entities/keys), `booking/services.py` (transactions), `booking/views.py` (request handling), `booking/admin.py` (staff management), `busbooking/settings.py` (Oracle and local host configuration), `booking/migrations/0001` through `0016` (versioned schema), `booking/management/commands/` (probes and fleet tasks), `templates/booking/` and `booking/static/booking/` (UI). Supporting evidence is `docs/er_model.md`, `docs/dbms_design.md`, `docs/fd_normalization_worked_example.md`, `docs/course_alignment.md`, `docs/course_sql_lab.sql`, `docs/observed_dbms_results.md`, `docs/recovery_drill.md`, `docs/query_plans.sql`, `docs/live_sql_demo.sql`, and `docs/fleet_schedule.md`. The editable slides are `docs/BusBook_DBMS_Presentation_Updated.pptx`; the team manual is `docs/BusBook_Team_User_Manual.pdf`.
 
-Evidence in this report distinguishes verified command outputs, dated historical database snapshots, and features established by reading the implemented source. The dynamic fare policy was implemented after the original report date; migration and verification on the user's Oracle installation are still required before claiming a live result.
+Evidence in this report distinguishes verified command outputs, dated historical database snapshots, and features established by reading the implemented source. The dynamic fare policy was implemented after the original report date and its Oracle constraint was verified by the user's 26 November command output. The browser and simulated payment flow were not independently retested by that command.
 
 ## Appendix C. Terms used in the demonstration
 
