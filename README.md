@@ -1,7 +1,13 @@
 # Bus Ticket Booking System
 
-Third-year CSE DBMS project: **Bus Ticket Booking System with Seat Reservation,
+Third-year AI&DS DBMS project: **Bus Ticket Booking System with Seat Reservation,
 Waiting List, and Cancellation Management**.
+
+Team:
+Karthik - 124AD0063
+Neelesh - 124AD0031
+Siddhartha - 124AD0050
+
 
 The application is a local Django web app backed by Oracle Database 21c XE.
 It demonstrates relational design, normalization, keys and constraints,
