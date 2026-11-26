@@ -256,4 +256,42 @@ html[data-effective-theme="dark"] .section-heading .eyebrow,html[data-effective-
 html[data-effective-theme="dark"] .trip-result .seat-availability { background:#d5f3e5; color:#07533a; }
 html[data-effective-theme="dark"] .trip-result .seat-availability.is-full { background:#ffe7bb; color:#674509; }
 html[data-effective-theme="dark"] .clear-search,html[data-effective-theme="dark"] .support-footer a { color:#8cbcff; }
+.ticket-print-controls { display:flex; align-items:center; justify-content:flex-end; gap:12px; }
+.ticket-print-controls small { max-width:250px; color:#5b7184; line-height:1.25; }
+@media (max-width:700px) { .ticket-print-controls { flex-wrap:wrap; } }
+
+/* Print only the pass. Zero page margins suppress browser chrome in Chrome/Edge;
+   the body inset keeps the ticket inside a physical printer's safe area. */
+@page { size:A4 portrait; margin:0; }
+@media print {
+  html,body { width:210mm!important; min-height:0!important; margin:0!important; padding:0!important; background:#fff!important; color:#102d4d!important; font-size:10pt!important; }
+  body { padding:8mm!important; }
+  main.container { width:100%!important; max-width:none!important; margin:0!important; padding:0!important; }
+  main > .alert,.navbar,.site-footer,.ticket-actions,.review-panel,.booking-activity,.cancel-action { display:none!important; }
+  .ticket-card { width:100%!important; max-width:none!important; margin:0!important; border:1px solid #b6c9d5!important; border-radius:8px!important; box-shadow:none!important; overflow:visible!important; break-inside:avoid; page-break-inside:avoid; }
+  .ticket-header { padding:12px 16px!important; gap:10px!important; break-inside:avoid; }
+  .ticket-heading { gap:10px!important; }
+  .ticket-logo { width:42px!important; height:42px!important; }
+  .ticket-header h1 { font-size:19pt!important; line-height:1.1!important; margin:3px 0!important; }
+  .ticket-header p { font-size:9pt!important; }
+  .ticket-header .eyebrow { font-size:7pt!important; }
+  .ticket-status { padding:4px 8px!important; font-size:7.5pt!important; }
+  .ticket-body { padding:12px 16px!important; }
+  .ticket-route { gap:8px!important; }
+  .ticket-route strong { font-size:16pt!important; margin:2px 0!important; }
+  .ticket-route small,.ticket-details small,.ticket-passenger small { font-size:7pt!important; letter-spacing:.06em!important; }
+  .ticket-rule { margin:11px 0!important; }
+  .ticket-details { gap:8px!important; }
+  .ticket-details strong { margin-top:3px!important; font-size:11pt!important; }
+  .ticket-seats { gap:3px!important; margin-top:3px!important; }
+  .ticket-seats span { min-width:0!important; padding:2px 4px!important; font-size:8pt!important; }
+  .ticket-passenger { gap:8px!important; margin-top:11px!important; padding-top:9px!important; }
+  .ticket-passenger strong { margin-top:2px!important; font-size:9pt!important; }
+  .fare-preview { margin-top:11px!important; padding:9px 12px!important; break-inside:avoid; }
+  .fare-preview h2 { margin-bottom:6px!important; font-size:10pt!important; }
+  .fare-preview > div { padding-block:2px!important; }
+  .fare-preview small { font-size:7.5pt!important; }
+  .ticket-note { margin-top:10px!important; padding:7px 10px!important; font-size:8.5pt!important; }
+  .ticket-footer { padding:7px 16px!important; font-size:7pt!important; }
+}
 .staff-heading{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin:28px 0 30px}.staff-heading h1{font-size:clamp(2rem,4vw,3rem);margin:6px 0}.staff-heading p{color:#56738a;margin:0}.staff-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.staff-metric{display:flex;flex-direction:column;gap:8px;min-height:154px;padding:24px;border:1px solid #d5e3ea;border-radius:18px;background:#fff;color:#14344f;text-decoration:none;box-shadow:0 8px 22px rgba(17,47,70,.04)}.staff-metric:hover{text-decoration:none;border-color:#9bc9d0;color:#14344f}.staff-metric span{font-size:.81rem;text-transform:uppercase;letter-spacing:.11em;font-weight:800;color:#52718a}.staff-metric strong{font-size:2.2rem;line-height:1.1}.staff-metric small{color:#59758b}.staff-metrics-revenue .staff-metric strong{font-size:1.9rem}.staff-metric-emphasis{background:#eaf7f5;border-color:#b7e3db}.staff-section{margin-top:30px;padding:30px;background:#fff;border:1px solid #d5e3ea;border-radius:20px}.staff-section h2{font-size:1.55rem;margin:6px 0 0}.staff-state-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:26px}.staff-state-grid div{padding:16px 0;border-top:3px solid #0e9d8d}.staff-state-grid strong{display:block;font-size:2rem;color:#14344f}.staff-state-grid span,.staff-footnote{color:#59758b}.staff-footnote{margin:20px 0 0}.staff-table-wrap{overflow-x:auto;margin-top:22px}.staff-table{width:100%;border-collapse:collapse}.staff-table th,.staff-table td{padding:14px 12px;border-bottom:1px solid #dbe7ec;text-align:left}.staff-table th{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#58758c}.staff-table td small{display:block;color:#688399}@media(max-width:750px){.staff-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.staff-state-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:470px){.staff-metrics{grid-template-columns:1fr}.staff-section{padding:20px}}

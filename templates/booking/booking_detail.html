@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}Booking {{ booking.reference }} · BusBook{% endblock %}
 {% block content %}
-<div class="ticket-actions"><a href="{% url 'my_bookings' %}" class="back-link">← My bookings</a>{% if booking.status == 'CONFIRMED' %}<button class="btn btn-outline-primary" type="button" onclick="window.print()">Print ticket</button>{% endif %}</div>
+<div class="ticket-actions"><a href="{% url 'my_bookings' %}" class="back-link">← My bookings</a>{% if booking.status == 'CONFIRMED' %}<div class="ticket-print-controls"><small>For a clean print, turn off “Headers and footers” in the print dialog.</small><button class="btn btn-outline-primary" type="button" onclick="window.print()">Print ticket</button></div>{% endif %}</div>
 <article class="ticket-card mt-3">
   <div class="ticket-header"><div class="ticket-heading"><img class="college-logo ticket-logo" src="{% static 'booking/iiitdm-kurnool-logo.jpg' %}" alt="IIITDM Kurnool emblem"><div><span class="eyebrow">IIITDM KURNOOL · BUSBOOK JOURNEY PASS</span><h1>{{ booking.trip.origin }} <span class="route-arrow">→</span> {{ booking.trip.destination }}</h1><p>{{ booking.trip.bus.operator_name }} · {{ booking.trip.bus.bus_type }}</p></div></div><span class="ticket-status status-{{ booking.status|lower }}">{{ booking.get_status_display }}</span></div>
   <div class="ticket-body">
