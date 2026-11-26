@@ -11,6 +11,9 @@ from .models import Booking, Payment, Trip, TripPoint, TripSeat, WaitlistEntry
 
 HOLD_MINUTES = 10
 OFFER_MINUTES = 10
+PLATFORM_FEE = Decimal("20.00")
+SERVICE_RATE = Decimal("0.02")
+GST_RATE = Decimal("0.18")
 
 
 class BookingConflict(Exception):
@@ -18,10 +21,12 @@ class BookingConflict(Exception):
 
 
 def fare_breakdown(seat_fare, seat_count):
+    if seat_count < 1:
+        raise ValueError("Choose at least one seat.")
     base = (Decimal(str(seat_fare)) * seat_count).quantize(Decimal("0.01"))
-    platform = Decimal("20.00")
-    service = Decimal("10.00")
-    gst = ((platform + service) * Decimal("0.18")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    platform = PLATFORM_FEE
+    service = (base * SERVICE_RATE).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    gst = ((platform + service) * GST_RATE).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     return {"base": base, "platform": platform, "service": service, "gst": gst,
             "total": base + platform + service + gst}
 
@@ -153,6 +158,7 @@ def hold_seats(*, user, trip, seat_ids, waitlist_entry=None, passenger_name="", 
         passenger_phone=passenger_phone,
         boarding_point=boarding, dropoff_point=dropoff, base_fare=charges["base"],
         platform_fee=charges["platform"], service_fee=charges["service"], gst_amount=charges["gst"],
+        fare_policy_version=2,
     )
     for seat in seats:
         seat.status = TripSeat.Status.HELD

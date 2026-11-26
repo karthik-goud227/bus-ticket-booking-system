@@ -124,10 +124,17 @@ Expired holds and offers are processed when the trip seat map is accessed.
 Each trip has a default city bus-stand boarding and drop-off point; staff can
 add more timed points under **Trip points** in admin. Passengers choose points
 when holding a seat or accepting an offer. A booking saves its seat subtotal,
-₹20 platform fee, ₹10 service fee, and illustrative 18% GST on those fees
-(₹5.40), then charges the same total in the simulated payment record. Older
+₹20 platform fee, a service fee of 2% of the seat subtotal, and illustrative
+18% GST on those two fees, then charges the same total in the simulated payment record. Older
 bookings keep their original total without retroactive fees. The ticket shows
 the full breakdown and the selected journey points.
+
+After updating an existing installation, set `DB_PASSWORD` in the current
+PowerShell window and run `manage.py migrate` before starting the app.
+Migration `0016` preserves older bills and adds Oracle checks for the new
+percentage-based policy. The `start_team.ps1` launcher also applies pending
+migrations before it generates trips. Run `manage.py verify_bill_integrity`
+after at least one booking exists.
 
 After a confirmed trip has arrived, its passenger can submit one 1–5 star bus
 review from the booking page. Trip search shows the average of verified

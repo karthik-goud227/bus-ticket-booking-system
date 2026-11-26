@@ -22,6 +22,12 @@ if (-not $env:DB_PASSWORD) {
     $env:DB_PASSWORD = [System.Net.NetworkCredential]::new('', $secure).Password
 }
 
+Write-Host 'Applying pending database migrations...'
+& $pythonPath manage.py migrate --noinput
+if ($LASTEXITCODE -ne 0) {
+    throw 'Database migration failed. Check the Oracle connection and review the error before restarting.'
+}
+
 Write-Host 'Refreshing the next 14 days of recurring trips...'
 & $pythonPath manage.py generate_daily_trips --days 14
 if ($LASTEXITCODE -ne 0) {

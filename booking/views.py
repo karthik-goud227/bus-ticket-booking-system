@@ -17,7 +17,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .models import AccountProfile, Booking, Bus, BusReview, Payment, Seat, SupportRequest, Trip, TripPoint, TripSeat, WaitlistEntry
-from .services import BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, leave_waitlist, refresh_trip
+from .services import GST_RATE, PLATFORM_FEE, SERVICE_RATE, BookingConflict, cancel_booking, confirm_booking, hold_seats, join_waitlist, leave_waitlist, refresh_trip
 
 
 def passenger_details(post):
@@ -289,6 +289,10 @@ def trip_detail(request, trip_id):
         "available_count": available_count, "trip_open": trip_open,
         "boarding_points": trip.points.filter(kind=TripPoint.Kind.BOARDING).order_by("scheduled_at", "id"),
         "dropoff_points": trip.points.filter(kind=TripPoint.Kind.DROPOFF).order_by("scheduled_at", "id"),
+        "platform_fee": PLATFORM_FEE,
+        "platform_fee_cents": int(PLATFORM_FEE * 100),
+        "service_percent": int(SERVICE_RATE * 100),
+        "gst_percent": int(GST_RATE * 100),
     })
 
 

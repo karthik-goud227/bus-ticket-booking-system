@@ -1,7 +1,7 @@
 # BusBook Team User Manual
 
 **IIITDM Kurnool · Third-year CSE DBMS project**  
-**Updated:** 5 November 2026  
+**Updated:** 26 November 2026
 **Project:** Bus Ticket Booking System with Seat Reservation, Waiting List, and Cancellation Management
 
 > This is an academic demonstration. Buses, routes, tickets, payments, refunds, charges and customer support are simulated. The app is hosted locally on one laptop; GitHub stores source and documents, not the running website or its Oracle data.
@@ -26,7 +26,7 @@ For the three-person demo, **one shared host is easiest**. The leader runs Oracl
 powershell -NoProfile -ExecutionPolicy Bypass -File .\start_team.ps1
 ```
 
-3. Enter the **Oracle `BUSBOOKING` password** when asked. This is not a passenger or Django admin password. The launcher refreshes the next 14 days of trips from recurring templates, starts the site, and prints the host and teammate links.
+3. Enter the **Oracle `BUSBOOKING` password** when asked. This is not a passenger or Django admin password. The launcher applies pending database migrations (including the versioned fare policy), refreshes the next 14 days of trips from recurring templates, starts the site, and prints the host and teammate links.
 4. Keep that PowerShell window and the host laptop open. On the host, open `http://127.0.0.1:8000/`. Teammates join the same network and open the printed local IP link, for example `http://192.168.1.10:8000/`.
 5. If you change Wi-Fi or hotspot, stop the server with **Ctrl+C**, rerun the launcher, and share its new link. Existing users and bookings stay in Oracle.
 
@@ -106,7 +106,7 @@ For a fresh installation only, the sequence below builds sample content. Keep `D
 1. **Search.** On the home page, use the From and To menus, travel date, bus type, operator, availability checkbox and departure/fare sort. The destination menu narrows when an origin is chosen. Results show operator, type, departure, approximate arrival and duration, fare per place, verified rating when available, and places available or full.
 2. **Inspect the layout.** Open a trip. The map distinguishes available places (pink/red), selected places, and unavailable places (grey). It shows a steering wheel/front orientation, the exit, standard seats or sleeper berths, and upper/lower decks when that bus has them. Bus layouts may have three or four places per row. A full or closed trip cannot accept a direct hold.
 3. **Choose details.** Select one or more available places. Enter a passenger name and phone number, and choose valid boarding and drop-off points. The selected boarding time must precede the drop-off time. The app no longer has the old six-seat limit; available inventory and the booking checks determine what can be selected.
-4. **Read the bill.** Before committing, review the displayed total. The saved bill has `base fare = trip fare × number of places`, a ₹20 platform fee, a ₹10 service fee, and illustrative 18% GST on those two fees (₹5.40). Thus a ₹499 trip fare for two places totals ₹1,033.40. The fee/tax treatment is part of this academic simulation, not a claim about any real operator's billing. Historical bookings made before this feature retain their original total.
+4. **Read the bill.** Before committing, review the displayed total. The saved bill has `base fare = trip fare × number of places`, a fixed ₹20 platform fee, a service fee of 2% of the base, and illustrative 18% GST on those two fees. For two ₹499 places: base ₹998, service ₹19.96, GST ₹7.19, total ₹1,045.15. For one ₹499 place: service ₹9.98, GST ₹5.40, total ₹534.38. The fee/tax treatment is part of this academic simulation, not a claim about any real operator's billing. Historical bookings keep their originally saved amounts.
 5. **Hold.** Submit the selection. The places are held for **10 minutes**. The hold page shows the deadline and the detailed charge. Oracle transactions lock the relevant inventory so two simultaneous passengers cannot both reserve the same trip place. If another person got a place first, refresh the map and choose again.
 6. **Confirm.** Use the **Confirm booking** action before the hold expires. It records a simulated captured payment and marks the places booked. No real money is charged.
 7. **Ticket.** Open **My bookings → View ticket** to see the reference, passenger details, operator, route, deck/berth labels, date, boarding and drop-off times, bill and booking status. Use the browser's print action for a paper/PDF ticket. The printed ticket is a demo travel pass, not valid transport.

@@ -1,7 +1,7 @@
 # Bus Ticket Booking System with Seat Reservation, Waiting List, and Cancellation Management
 
 **Detailed project report | Third-year CSE DBMS project | IIITDM Kurnool**  
-**Project state reviewed:** 5 November 2026
+**Original project review:** 5 November 2026; **fare policy update:** 26 November 2026
 **Implementation:** Oracle Database 21c XE, Django 6.1.2, Python 3.14, python-oracledb 4.0.2  
 **Team:** three students; individual names and institutional approval details are intentionally left for the team to add before submission.
 
@@ -67,7 +67,7 @@ Development was incremental: establish the Oracle schema and Django connection; 
 | Core lifecycle | Hold, confirm, cancel, refund, FIFO offer | Ticket, Oracle views, verification commands |
 | Database safeguards | Triggers, checks, unique indexes, row locks and audit | Migrations `0003`-`0010`, probes |
 | Fleet and service | 24+ place fleet, decks/berths, recurring trips, points, reviews, support | Migrations `0012`-`0013`, fleet verifier |
-| Account and billing | Profile/theme/history, bill arithmetic constraint | Migrations `0014`-`0015`, bill verifier |
+| Account and billing | Profile/theme/history, bill arithmetic and versioned pricing constraints | Migrations `0014`-`0016`, bill verifier |
 | Evidence and communication | Data Pump restore, plans, SQL exercises, editable presentation, manual and report | `docs/` artifacts and Git history |
 
 The audit and schedule trigger migrations initially needed PL/SQL recompilation. Follow-up migrations `0007` and `0010` repaired already-applied installations while the original definitions were corrected for fresh installs. The successful Oracle trigger checks are recorded; this is an example of detecting and fixing a real database deployment fault.
@@ -204,6 +204,8 @@ The worked derivation in `docs/fd_normalization_worked_example.md` starts from a
 
 Some duplication is intentional and governed: `Booking.base_fare`, fees, tax and total preserve the price agreed at hold time even if `Trip.fare` changes later; passenger contact fields preserve the ticket snapshot when an account profile changes. The DBMS check enforces `total_fare = base_fare + platform_fee + service_fee + gst_amount`. `TripSeat.status` is the current lockable inventory state, while `BookingStatusEvent` preserves transitions. A separate operator relation would be justified if operator contacts, contracts or permissions became first-class data; at present operator name is an attribute of `Bus`.
 
+From fare policy version 2, platform fee is fixed at ₹20 per booking; service fee is 2% of the selected-seat subtotal and illustrative GST is 18% of those two fees, with each percentage rounded to paise. The booking stores its policy version. Migration `0016` adds an Oracle check for the version 2 fee and GST formulas while preserving version 1 historical bills. The earlier 3 November bill test in section 6.1 predates this change and remains a dated result; it does not assert that the new policy has been migrated or tested on the user's current database.
+
 ### 4.3 Physical schema and integrity rules
 
 | DBMS mechanism | Implemented use | Benefit |
@@ -236,7 +238,7 @@ This matters because a read-then-write check without a lock can let two sessions
 
 Oracle Data Pump exported the `BUSBOOKING` schema to a server-side dump and imported a checkpoint into `BUSBOOKING_RESTORE` with `REMAP_SCHEMA`. The restored *historical checkpoint* held one trip, ten inventory rows, five bookings, five payments and one waiting entry; three views and the two then-existing triggers were valid. The separate restore account was removed afterward. This demonstrated point-in-time recovery, not ongoing scheduled backups. No private dump or password was placed in GitHub.
 
-Django migration provenance is explicit: `0001` base domain, `0002` payment, `0003` integrity triggers, `0004` reporting views, `0005` active-queue uniqueness, `0006`-`0007` audit trigger and repair, `0008` offer rules, `0009`-`0010` schedule guard and repair, `0011` login events, `0012` fleet layout/passenger fields/recurrence, `0013` service-billing-reviews, `0014` account profiles, and `0015` bill integrity. Existing installations apply only outstanding migrations; the recorded user run applied `0015` successfully. The Git repository stores migration source, not a copy of the live Oracle data.
+Django migration provenance is explicit: `0001` base domain, `0002` payment, `0003` integrity triggers, `0004` reporting views, `0005` active-queue uniqueness, `0006`-`0007` audit trigger and repair, `0008` offer rules, `0009`-`0010` schedule guard and repair, `0011` login events, `0012` fleet layout/passenger fields/recurrence, `0013` service-billing-reviews, `0014` account profiles, `0015` bill integrity, and `0016` versioned dynamic pricing. Existing installations apply only outstanding migrations; the recorded user run applied `0015` successfully, while `0016` still needs a live application. The Git repository stores migration source, not a copy of the live Oracle data.
 
 ### 4.7 DBMS concept-to-implementation map
 
@@ -247,6 +249,7 @@ Django migration provenance is explicit: `0001` base domain, `0002` payment, `00
 | 1NF/2NF/3NF/BCNF | Decomposition of wide example into core relations | Prevents route/vehicle update anomalies |
 | Referential integrity | FKs between domain tables and `AUTH_USER` | Blocks orphan references |
 | Domain and arithmetic constraints | Status/time/fare rules; `0015` nonnegative parts and exact bill sum | Rejects malformed rows including a one-paisa discrepancy |
+| Versioned fare policy | `0016` formula check on new bookings, historical version 1 rows preserved | Rejects a balanced but incorrectly calculated new fee or tax |
 | Conditional uniqueness | Function-based `UQ_ACTIVE_WAITLIST` and `UQ_ACTIVE_OFFER_SEAT` | Keeps history while forbidding competing active rows |
 | Triggers and PL/SQL | Same-bus/same-trip, offer-trip, audit, no-overlap rules | Protects cross-table rules even for direct SQL |
 | Transactions, locking, ACID | Atomic hold/confirm/cancel and `select_for_update` | Prevents partial or double reservations |
@@ -364,9 +367,9 @@ $env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $secure).Password
 
 ## Appendix B. Project evidence and source map
 
-The public source repository is https://github.com/karthik-goud227/bus-ticket-booking-system. The main implementation is in `booking/models.py` (entities/keys), `booking/services.py` (transactions), `booking/views.py` (request handling), `booking/admin.py` (staff management), `busbooking/settings.py` (Oracle and local host configuration), `booking/migrations/0001` through `0015` (versioned schema), `booking/management/commands/` (probes and fleet tasks), `templates/booking/` and `booking/static/booking/` (UI). Supporting evidence is `docs/er_model.md`, `docs/dbms_design.md`, `docs/fd_normalization_worked_example.md`, `docs/course_alignment.md`, `docs/course_sql_lab.sql`, `docs/observed_dbms_results.md`, `docs/recovery_drill.md`, `docs/query_plans.sql`, `docs/live_sql_demo.sql`, and `docs/fleet_schedule.md`. The editable slides are `docs/BusBook_DBMS_Presentation_Updated.pptx`; the team manual is `docs/BusBook_Team_User_Manual.pdf`.
+The public source repository is https://github.com/karthik-goud227/bus-ticket-booking-system. The main implementation is in `booking/models.py` (entities/keys), `booking/services.py` (transactions), `booking/views.py` (request handling), `booking/admin.py` (staff management), `busbooking/settings.py` (Oracle and local host configuration), `booking/migrations/0001` through `0016` (versioned schema), `booking/management/commands/` (probes and fleet tasks), `templates/booking/` and `booking/static/booking/` (UI). Supporting evidence is `docs/er_model.md`, `docs/dbms_design.md`, `docs/fd_normalization_worked_example.md`, `docs/course_alignment.md`, `docs/course_sql_lab.sql`, `docs/observed_dbms_results.md`, `docs/recovery_drill.md`, `docs/query_plans.sql`, `docs/live_sql_demo.sql`, and `docs/fleet_schedule.md`. The editable slides are `docs/BusBook_DBMS_Presentation_Updated.pptx`; the team manual is `docs/BusBook_Team_User_Manual.pdf`.
 
-Evidence in this report distinguishes verified command outputs, dated historical database snapshots, and features established by reading the implemented source. It does not assert a fresh live Oracle query for 5 November 2026.
+Evidence in this report distinguishes verified command outputs, dated historical database snapshots, and features established by reading the implemented source. The dynamic fare policy was implemented after the original report date; migration and verification on the user's Oracle installation are still required before claiming a live result.
 
 ## Appendix C. Terms used in the demonstration
 

@@ -1,8 +1,11 @@
 """Core relational model. Seat inventory is one row per seat per trip."""
+from decimal import Decimal
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Round
 
 
 class Bus(models.Model):
@@ -146,6 +149,7 @@ class Booking(models.Model):
     platform_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     service_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     gst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    fare_policy_version = models.PositiveSmallIntegerField(default=1, editable=False)
 
     class Meta:
         indexes = [models.Index(fields=["user", "created_at"], name="idx_booking_user_created")]
@@ -154,6 +158,14 @@ class Booking(models.Model):
             models.CheckConstraint(condition=Q(status__in=["HELD", "CONFIRMED", "CANCELLED", "EXPIRED"]), name="ck_booking_status"),
             models.CheckConstraint(condition=Q(base_fare__gte=0, platform_fee__gte=0, service_fee__gte=0, gst_amount__gte=0), name="ck_bill_parts_nonnegative"),
             models.CheckConstraint(condition=Q(total_fare=models.F("base_fare") + models.F("platform_fee") + models.F("service_fee") + models.F("gst_amount")), name="ck_bill_total_matches_parts"),
+            models.CheckConstraint(
+                condition=Q(fare_policy_version=1) | (
+                    Q(fare_policy_version=2, platform_fee=20)
+                    & Q(service_fee=Round(models.F("base_fare") * models.Value(Decimal("0.02")), precision=2))
+                    & Q(gst_amount=Round((models.F("platform_fee") + models.F("service_fee")) * models.Value(Decimal("0.18")), precision=2))
+                ),
+                name="ck_bill_policy_versioned",
+            ),
         ]
 
 

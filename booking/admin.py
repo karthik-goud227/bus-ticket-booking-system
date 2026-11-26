@@ -147,7 +147,7 @@ class BookingAdmin(admin.ModelAdmin):
     list_display = ("reference", "user", "passenger_name", "passenger_phone", "trip", "status", "total_fare", "created_at")
     list_filter = ("status", "trip__departure_at")
     search_fields = ("reference", "user__username", "trip__origin", "trip__destination")
-    readonly_fields = ("reference", "user", "passenger_name", "passenger_phone", "trip", "boarding_point", "dropoff_point", "base_fare", "platform_fee", "service_fee", "gst_amount", "status", "total_fare", "created_at", "hold_expires_at", "confirmed_at", "cancelled_at")
+    readonly_fields = ("reference", "user", "passenger_name", "passenger_phone", "trip", "boarding_point", "dropoff_point", "base_fare", "platform_fee", "service_fee", "gst_amount", "fare_policy_version", "status", "total_fare", "created_at", "hold_expires_at", "confirmed_at", "cancelled_at")
     list_select_related = ("user", "trip")
     inlines = (BookingStatusEventInline,)
 
