@@ -7,7 +7,7 @@
   <title>{% block title %}BusBook{% endblock %}</title>
   <script>const root=document.documentElement;const dark=window.matchMedia('(prefers-color-scheme: dark)');function applyTheme(){root.dataset.effectiveTheme=root.dataset.theme==='DARK'||root.dataset.theme==='SYSTEM'&&dark.matches?'dark':'light'}applyTheme();dark.addEventListener('change',applyTheme);</script>
   <link rel="stylesheet" href="{% static 'booking/foundation.css' %}">
-  <link rel="stylesheet" href="{% static 'booking/app.css' %}?v=20261126-ticket-print">
+  <link rel="stylesheet" href="{% static 'booking/app.css' %}?v=20261126-ticket-header">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
