@@ -1,6 +1,12 @@
 -- Live Oracle demo. Connect to XEPDB1 as BUSBOOKING in SQL Developer.
 -- Run one numbered SELECT at a time with Ctrl+Enter. These queries do not change data.
 -- Refresh or rerun after each action in the website.
+-- Keep the website and SQL Developer connected to the SAME XEPDB1 database.
+
+-- 0. Confirm which schema and pluggable database this worksheet uses.
+SELECT SYS_CONTEXT('USERENV', 'SESSION_USER') connected_user,
+       SYS_CONTEXT('USERENV', 'SERVICE_NAME') service_name
+FROM dual;
 
 -- 1. Show the real application tables and row counts.
 SELECT 'USERS' entity, COUNT(*) rows_stored FROM auth_user
@@ -10,7 +16,12 @@ UNION ALL SELECT 'TRIPS', COUNT(*) FROM booking_trip
 UNION ALL SELECT 'TRIP_SEATS', COUNT(*) FROM booking_tripseat
 UNION ALL SELECT 'BOOKINGS', COUNT(*) FROM booking_booking
 UNION ALL SELECT 'PAYMENTS', COUNT(*) FROM booking_payment
-UNION ALL SELECT 'WAITLIST', COUNT(*) FROM booking_waitlistentry;
+UNION ALL SELECT 'WAITLIST', COUNT(*) FROM booking_waitlistentry
+UNION ALL SELECT 'TRIP_POINTS', COUNT(*) FROM booking_trippoint
+UNION ALL SELECT 'DAILY_TEMPLATES', COUNT(*) FROM booking_recurringtrip
+UNION ALL SELECT 'REVIEWS', COUNT(*) FROM booking_busreview
+UNION ALL SELECT 'SUPPORT_REQUESTS', COUNT(*) FROM booking_supportrequest
+UNION ALL SELECT 'BOOKING_EVENTS', COUNT(*) FROM booking_bookingstatusevent;
 
 -- 2. Admin and passenger accounts use AUTH_USER; the staff flags identify admins.
 -- Avoid projecting password hashes or private contact details during the demo.
@@ -45,15 +56,20 @@ JOIN booking_bus bus ON bus.id = t.bus_id
 LEFT JOIN booking_payment p ON p.booking_id = b.id
 ORDER BY b.id DESC FETCH FIRST 15 ROWS ONLY;
 
--- 5. Physical seat -> trip inventory -> booking. Filter by a trip ID if needed.
+-- 5. Physical seat -> trip inventory -> booking for the newest booking's trip.
+-- Oracle stores the seat label as the quoted column "NUMBER".
 SELECT t.id trip_id, t.origin, t.destination,
-       s.number seat_number, s.deck, s.seat_type,
+       s."NUMBER" seat_number, s.deck, s.seat_type,
        ts.status seat_status, b.reference booking_reference
 FROM booking_tripseat ts
 JOIN booking_trip t ON t.id = ts.trip_id
 JOIN booking_seat s ON s.id = ts.seat_id
 LEFT JOIN booking_booking b ON b.id = ts.booking_id
-ORDER BY t.id DESC, s.number FETCH FIRST 40 ROWS ONLY;
+WHERE t.id = (SELECT trip_id FROM booking_booking
+              ORDER BY id DESC FETCH FIRST 1 ROW ONLY)
+ORDER BY CASE WHEN REGEXP_LIKE(s."NUMBER", '^[0-9]+$')
+              THEN TO_NUMBER(s."NUMBER") END NULLS LAST,
+         s."NUMBER";
 
 -- 6. Oracle trigger-generated lifecycle history; newest events first.
 SELECT e.id event_id, b.reference, e.old_status, e.new_status, e.changed_at
@@ -72,3 +88,40 @@ ORDER BY t.departure_at DESC FETCH FIRST 15 ROWS ONLY;
 -- 8. Database reporting views update after booking and cancellation.
 SELECT * FROM v_trip_occupancy ORDER BY trip_id DESC FETCH FIRST 15 ROWS ONLY;
 SELECT * FROM v_trip_revenue ORDER BY trip_id DESC FETCH FIRST 15 ROWS ONLY;
+
+-- 9. Normalized trip points, booking choice, and recurring schedule.
+SELECT b.reference, bp.name boarding_point, dp.name dropoff_point,
+       bp.scheduled_at boarding_time, dp.scheduled_at dropoff_time,
+       r.id recurring_template_id, r.departure_time daily_departure
+FROM booking_booking b
+LEFT JOIN booking_trippoint bp ON bp.id = b.boarding_point_id
+LEFT JOIN booking_trippoint dp ON dp.id = b.dropoff_point_id
+JOIN booking_trip t ON t.id = b.trip_id
+LEFT JOIN booking_recurringtrip r ON r.id = t.schedule_id
+ORDER BY b.id DESC FETCH FIRST 15 ROWS ONLY;
+
+-- 10. Candidate keys and database-enforced domain rules.
+-- P = primary key, U = unique key, C = check constraint.
+SELECT table_name, constraint_name, constraint_type, status
+FROM user_constraints
+WHERE table_name LIKE 'BOOKING_%'
+  AND constraint_type IN ('P', 'U', 'C')
+ORDER BY table_name, constraint_type, constraint_name;
+
+-- 11. Transaction-consistency diagnostic: any nonzero count needs investigation.
+-- Payment amounts are simulated. A captured payment should have a confirmed
+-- booking; a refunded payment should have a cancelled booking.
+SELECT COUNT(*) inconsistent_payment_rows
+FROM booking_payment p
+JOIN booking_booking b ON b.id = p.booking_id
+WHERE p.amount <> b.total_fare
+   OR (p.status = 'CAPTURED' AND b.status <> 'CONFIRMED')
+   OR (p.status = 'REFUNDED' AND b.status <> 'CANCELLED');
+
+-- 12. Inventory consistency across three entities: trip, bus, physical seat.
+-- The project Oracle trigger prevents these cross-table mismatches.
+SELECT COUNT(*) cross_bus_inventory_rows
+FROM booking_tripseat ts
+JOIN booking_trip t ON t.id = ts.trip_id
+JOIN booking_seat s ON s.id = ts.seat_id
+WHERE s.bus_id <> t.bus_id;

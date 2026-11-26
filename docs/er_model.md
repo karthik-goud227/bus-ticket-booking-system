@@ -8,8 +8,14 @@ table; the other entities belong to the booking application.
 erDiagram
     AUTH_USER ||--o{ BOOKING : makes
     AUTH_USER ||--o{ WAITLIST_ENTRY : joins
+    AUTH_USER ||--o| ACCOUNT_PROFILE : configures
+    AUTH_USER ||--o{ LOGIN_EVENT : signs_in
+    AUTH_USER ||--o{ SUPPORT_REQUEST : raises
     BUS ||--o{ SEAT : contains
     BUS ||--o{ TRIP : operates
+    BUS ||--o{ RECURRING_TRIP : scheduled_by
+    RECURRING_TRIP |o--o{ TRIP : generates
+    TRIP ||--o{ TRIP_POINT : stops_at
     TRIP ||--o{ TRIP_SEAT : inventories
     SEAT ||--o{ TRIP_SEAT : appears_on
     TRIP ||--o{ BOOKING : receives
@@ -17,6 +23,8 @@ erDiagram
     TRIP ||--o{ WAITLIST_ENTRY : queues
     BOOKING |o--o{ TRIP_SEAT : allocates
     BOOKING ||--o| PAYMENT : records
+    BOOKING ||--o| BUS_REVIEW : may_receive
+    BOOKING |o--o{ SUPPORT_REQUEST : concerns
     TRIP_SEAT |o--o{ WAITLIST_ENTRY : offered_to
 
     BUS {
@@ -51,6 +59,32 @@ erDiagram
     AUTH_USER {
         int id PK
         string username UK
+        boolean is_staff
+        boolean is_superuser
+    }
+    ACCOUNT_PROFILE {
+        int id PK
+        int user_id FK,UK
+        string phone
+        string theme
+    }
+    LOGIN_EVENT {
+        int id PK
+        int user_id FK
+        datetime occurred_at
+    }
+    RECURRING_TRIP {
+        int id PK
+        int bus_id FK
+        time departure_time
+        int duration_minutes
+    }
+    TRIP_POINT {
+        int id PK
+        int trip_id FK
+        string kind
+        string name
+        datetime scheduled_at
     }
     BOOKING {
         int id PK
@@ -81,6 +115,19 @@ erDiagram
         string status
         datetime joined_at
         datetime offer_expires_at
+    }
+    BUS_REVIEW {
+        int id PK
+        int booking_id FK,UK
+        int bus_id FK
+        int user_id FK
+        int rating
+    }
+    SUPPORT_REQUEST {
+        int id PK
+        int user_id FK
+        int booking_id FK
+        string status
     }
 ```
 
@@ -124,3 +171,21 @@ recording when that migration is applied.
 needs operator-level accounts, contacts, or policies, move operators into a
 separate `OPERATOR` table and reference it from `BUS`. This is a future
 normalization extension, not an implemented table.
+
+## Functional dependencies and keys to present
+
+| Relation | Candidate or alternate key | Functional dependency | Database enforcement |
+|---|---|---|---|
+| `BUS` | `id`; alternate `registration_number` | `registration_number → operator_name, bus_type, seats_per_row, has_upper_deck` | Primary key and unique registration |
+| `SEAT` | `id`; alternate `(bus_id, number)` | `(bus_id, number) → seat_type, deck` | `UQ_SEAT_BUS_NUMBER` |
+| `TRIP_SEAT` | `id`; alternate `(trip_id, seat_id)` | `(trip_id, seat_id) → status, booking_id, hold_expires_at` | `UQ_TRIP_SEAT` plus state checks |
+| `BOOKING` | `id`; alternate `reference` | `reference → user_id, trip_id, status, fare snapshot` | Primary key and unique reference |
+| `PAYMENT` | `id`; alternate `booking_id` | `booking_id → amount, status, captured_at, refunded_at` | One-to-one unique foreign key |
+| `TRIP_POINT` | `id`; alternate `(trip_id, kind, name)` | `(trip_id, kind, name) → scheduled_at` | `UQ_TRIP_POINT` |
+
+These dependencies describe the implemented schema, including the unique
+constraints in Django migrations. `AUTH_USER.is_staff` and `is_superuser`
+distinguish administrator accounts; they are rows in `AUTH_USER`, not a second
+independent admin table. `TRIP.departure_at` and `arrival_at` are the stored
+journey dates. A daily `RECURRING_TRIP` is a template; each generated `TRIP`
+keeps its own dates, seat inventory, and booking history.

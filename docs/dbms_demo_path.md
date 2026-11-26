@@ -4,6 +4,10 @@ Use this as a speaking sequence during the live demo. Show actual database
 output; do not claim a result that has not been observed.
 For a compact SQL Developer walkthrough, use `docs/live_sql_demo.sql` with
 the speaking notes in `docs/live_sql_demo.md`.
+For a broader entity-and-relationship walkthrough, use
+`docs/live_relational_demo.sql`. It covers the newer trip points, recurring
+templates, reviews, support requests, booking events, and bill/inventory
+diagnostics as well as the original booking tables.
 
 | Concept | What to show | Current evidence |
 | --- | --- | --- |
@@ -27,3 +31,24 @@ the speaking notes in `docs/live_sql_demo.md`.
 Presentation order: show the ER model and normalization, then constraints and
 triggers, then a seat booking in the app, then the race result, then reporting
 views and execution plans. Finish with recovery evidence once completed.
+
+## Ten-minute live relational walkthrough
+
+1. Connect SQL Developer as `BUSBOOKING` to `XEPDB1`. Run query 0 in
+   `docs/live_relational_demo.sql` and confirm the schema and service.
+2. Run queries 1–3 to show stored entities, admin/passenger flags, and actual
+   Oracle foreign keys. Administrator accounts are `AUTH_USER` rows with
+   `IS_STAFF=1`; there is no separate administrator table.
+3. Run query 4. Make a fresh booking in the website, then rerun query 4.
+   New data becomes visible after the website transaction commits; refresh
+   the result in SQL Developer rather than expecting an old grid to update.
+4. Run query 5 to show that the booking's trip has individual physical-seat
+   inventory rows. Confirm or cancel the booking, then rerun queries 4–6 and
+   8 to show status, simulated payment, Oracle-written status event, and
+   occupancy/revenue changes.
+5. If time remains, run queries 9–12: trip points and daily template,
+   candidate keys/checks, and two zero-count integrity diagnostics. A nonzero
+   diagnostic is a finding to investigate, not a claim that the test passed.
+
+Do not display `AUTH_USER.PASSWORD` or a passenger's phone number on the
+projector. The SQL worksheet deliberately leaves those columns out.
